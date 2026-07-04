@@ -1,0 +1,17 @@
+name: Floating AI action ref
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gemini:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Gemini
+        id: gemini
+        uses: google-github-actions/run-gemini-cli@v0
+        with:
+          prompt: "Summarize recent changes."

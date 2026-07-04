@@ -1,0 +1,20 @@
+name: AI output to GitHub merge
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Choose a PR
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: "Return the PR number that should be merged."
+      - name: Merge selected PR
+        run: gh pr merge "${{ steps.claude.outputs.response }}" --merge

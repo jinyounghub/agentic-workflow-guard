@@ -1,0 +1,22 @@
+name: Agentic Workflow Guard
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  awi-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Planned release syntax. Replace with the published tag after v0.1.0 is released.
+      - uses: jinyounghub/agentic-workflow-guard@v0
+        with:
+          paths: .github/workflows
+          fail-on: high
+          format: markdown
+          output: awi-guard.md

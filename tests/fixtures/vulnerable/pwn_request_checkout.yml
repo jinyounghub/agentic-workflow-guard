@@ -1,0 +1,19 @@
+name: Pwn request checkout
+
+on:
+  pull_request_target:
+
+permissions:
+  contents: read
+
+jobs:
+  checkout:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR head from fork
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Inspect files
+        run: npm test

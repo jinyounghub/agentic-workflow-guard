@@ -1,0 +1,10 @@
+import type { Location, ParsedWorkflow } from "./types.js";
+export declare function isRecord(value: unknown): value is Record<string, unknown>;
+export declare function asString(value: unknown): string | undefined;
+export declare function asRecord(value: unknown): Record<string, unknown> | undefined;
+export declare function scalarToString(value: unknown): string | undefined;
+export declare function findLineColumn(content: string, needles: Array<string | undefined>): Location;
+export declare function collectTriggers(onValue: unknown): string[];
+export declare function parseWorkflowFile(filePath: string, content: string): ParsedWorkflow;
+export declare function workflowHasTrigger(workflow: ParsedWorkflow, trigger: string): boolean;
+export declare function valueContainsExpression(value: unknown, pattern: RegExp): boolean;

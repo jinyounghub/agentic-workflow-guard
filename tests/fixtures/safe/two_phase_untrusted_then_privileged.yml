@@ -1,0 +1,18 @@
+name: Safe two phase workflow
+
+on:
+  workflow_run:
+    workflows: ["Untrusted analysis"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download reviewed artifact
+        run: echo "Download a pre-reviewed artifact from a separate untrusted workflow."
+      - name: Require maintainer-controlled release
+        run: echo "No PR head checkout and no agent-derived command execution."

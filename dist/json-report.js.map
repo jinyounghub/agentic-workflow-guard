@@ -1,0 +1,1 @@
+{"version":3,"file":"json-report.js","sourceRoot":"","sources":["../src/json-report.ts"],"names":[],"mappings":"AAEA,MAAM,UAAU,gBAAgB,CAAC,MAAkB;IACjD,OAAO,GAAG,IAAI,CAAC,SAAS,CACtB;QACE,aAAa,EAAE,OAAO;QACtB,IAAI,EAAE,wBAAwB;QAC9B,OAAO,EAAE,MAAM,CAAC,OAAO;QACvB,OAAO,EAAE,MAAM,CAAC,OAAO;KACxB,EACD,IAAI,EACJ,CAAC,CACF,IAAI,CAAC;AACR,CAAC"}

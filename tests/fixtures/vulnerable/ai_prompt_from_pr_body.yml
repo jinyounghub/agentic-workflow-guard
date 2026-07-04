@@ -1,0 +1,17 @@
+name: Vulnerable PR prompt
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ask Claude to review the pull request
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: "Review this PR description: ${{ github.event.pull_request.body }}"

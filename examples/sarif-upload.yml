@@ -1,0 +1,27 @@
+name: Agentic Workflow Guard SARIF
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  awi-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Planned release syntax. Replace with the published tag after v0.1.0 is released.
+      - uses: jinyounghub/agentic-workflow-guard@v0
+        with:
+          paths: .github/workflows
+          fail-on: high
+          format: sarif
+          output: awi-guard.sarif
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: awi-guard.sarif

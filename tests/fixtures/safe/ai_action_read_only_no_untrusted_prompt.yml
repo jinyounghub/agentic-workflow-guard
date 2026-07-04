@@ -1,0 +1,17 @@
+name: Safe AI read only
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  summarize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Codex with a static prompt
+        id: codex
+        uses: openai/codex-action@1111111111111111111111111111111111111111
+        with:
+          prompt: "Summarize repository documentation. Do not modify files."

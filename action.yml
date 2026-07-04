@@ -1,0 +1,36 @@
+name: Agentic Workflow Guard
+description: Detect Agentic Workflow Injection risks in AI-powered GitHub Actions workflows.
+author: agentic-workflow-guard contributors
+inputs:
+  paths:
+    description: Workflow file or directory paths to scan. Supports comma or newline separated values.
+    required: false
+    default: .github/workflows
+  fail-on:
+    description: Minimum severity that fails the action. One of low, medium, high, critical, never.
+    required: false
+    default: high
+  format:
+    description: Report format. One of markdown, json, sarif.
+    required: false
+    default: sarif
+  output:
+    description: Path to write the report.
+    required: false
+    default: awi-guard.sarif
+  upload-sarif:
+    description: Deprecated placeholder. Use github/codeql-action/upload-sarif in a following step.
+    required: false
+    default: "false"
+  config:
+    description: Reserved for a future awi-guard.config.yml file.
+    required: false
+  github-token:
+    description: Optional GitHub token for future integrations. The deterministic scanner does not require it.
+    required: false
+runs:
+  using: node20
+  main: dist/action/index.js
+branding:
+  icon: shield
+  color: purple

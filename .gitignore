@@ -1,0 +1,10 @@
+node_modules/
+coverage/
+*.log
+awi-guard.json
+awi-guard.md
+awi-guard.sarif
+awi-guard-*.json
+awi-guard-*.md
+awi-guard-*.sarif
+awi-guard-summary.md

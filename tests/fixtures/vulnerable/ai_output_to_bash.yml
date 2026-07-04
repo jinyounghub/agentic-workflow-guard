@@ -1,0 +1,19 @@
+name: AI output to bash
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  script:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Produce agent output
+        id: codex
+        uses: openai/codex-action@v1
+        with:
+          prompt: "Return a shell command to inspect this repository."
+      - name: Execute agent output
+        run: bash -c "${{ steps.codex.outputs.response }}"

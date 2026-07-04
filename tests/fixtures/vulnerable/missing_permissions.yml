@@ -1,0 +1,14 @@
+name: Missing permissions
+
+on:
+  workflow_dispatch:
+
+jobs:
+  agent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run AI inference
+        id: inference
+        uses: actions/ai-inference@v1
+        with:
+          prompt: "Summarize the repository state."

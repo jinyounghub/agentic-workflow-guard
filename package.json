@@ -1,0 +1,42 @@
+{
+  "name": "agentic-workflow-guard",
+  "version": "0.1.0",
+  "description": "Static analyzer and GitHub Action for detecting Agentic Workflow Injection risks in AI-powered GitHub Actions workflows.",
+  "type": "module",
+  "bin": {
+    "agentic-workflow-guard": "./dist/cli.js",
+    "awi-guard": "./dist/cli.js"
+  },
+  "files": ["dist", "action.yml", "README.md", "LICENSE", "SECURITY.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && ncc build dist/action.js -o dist/action --source-map",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "test": "vitest run",
+    "scan:fixtures": "node dist/cli.js scan tests/fixtures --format markdown --fail-on never"
+  },
+  "keywords": [
+    "github-actions",
+    "security",
+    "static-analysis",
+    "agentic-workflow-injection",
+    "prompt-injection",
+    "sarif"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@actions/core": "^3.0.1",
+    "fast-glob": "^3.3.3",
+    "yaml": "^2.8.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/node": "^22.10.2",
+    "@vercel/ncc": "^0.44.1",
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.9"
+  }
+}
