@@ -19,7 +19,7 @@ This project detects those paths with deterministic static analysis. It does not
 ## Install
 
 ```bash
-npm install --save-dev agentic-workflow-guard
+npm install --save-dev @jinyounghub/agentic-workflow-guard
 ```
 
 For local development in this repository:
@@ -35,12 +35,12 @@ On Windows PowerShell, use `npm.cmd` if script execution policy blocks `npm.ps1`
 ## CLI usage
 
 ```bash
-npx agentic-workflow-guard scan
-npx agentic-workflow-guard scan .github/workflows
-npx agentic-workflow-guard scan --format markdown
-npx agentic-workflow-guard scan --format json
-npx agentic-workflow-guard scan --format sarif --output awi-guard.sarif
-npx agentic-workflow-guard scan --fail-on high
+npx @jinyounghub/agentic-workflow-guard scan
+npx @jinyounghub/agentic-workflow-guard scan .github/workflows
+npx @jinyounghub/agentic-workflow-guard scan --format markdown
+npx @jinyounghub/agentic-workflow-guard scan --format json
+npx @jinyounghub/agentic-workflow-guard scan --format sarif --output awi-guard.sarif
+npx @jinyounghub/agentic-workflow-guard scan --fail-on high
 ```
 
 Supported options:

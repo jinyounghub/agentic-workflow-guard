@@ -1,5 +1,5 @@
 {
-  "name": "agentic-workflow-guard",
+  "name": "@jinyounghub/agentic-workflow-guard",
   "version": "0.1.0",
   "description": "Static analyzer and GitHub Action for detecting Agentic Workflow Injection risks in AI-powered GitHub Actions workflows.",
   "type": "module",
@@ -24,6 +24,17 @@
     "sarif"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jinyounghub/agentic-workflow-guard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jinyounghub/agentic-workflow-guard/issues"
+  },
+  "homepage": "https://github.com/jinyounghub/agentic-workflow-guard#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=20"
   },
