@@ -4,8 +4,8 @@
   "description": "Static analyzer and GitHub Action for detecting Agentic Workflow Injection risks in AI-powered GitHub Actions workflows.",
   "type": "module",
   "bin": {
-    "agentic-workflow-guard": "./dist/cli.js",
-    "awi-guard": "./dist/cli.js"
+    "agentic-workflow-guard": "dist/cli.js",
+    "awi-guard": "dist/cli.js"
   },
   "files": ["dist", "action.yml", "README.md", "LICENSE", "SECURITY.md"],
   "scripts": {
