@@ -14,7 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # Planned release syntax. Replace with the published tag after v0.1.0 is released.
       - uses: jinyounghub/agentic-workflow-guard@v0
         with:
           paths: .github/workflows

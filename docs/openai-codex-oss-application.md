@@ -47,7 +47,7 @@ Do not invent metrics. As of the initial scaffold:
 - Stars: 0 until the public repository exists
 - Downloads: 0 until the npm package exists
 - External adopters: 0 until real users are documented
-- Releases: none until the maintainer approves v0.1.0 publication
+- Releases: v0.1.0 GitHub release planned after CI passes
 
 ## Missing metrics before applying
 

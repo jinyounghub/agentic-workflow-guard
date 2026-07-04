@@ -58,7 +58,7 @@ Supported options:
 
 ## GitHub Action usage
 
-The action syntax below is the planned v0 release form. Do not use the `jinyounghub/agentic-workflow-guard@v0` reference until the repository is public and the tag exists.
+After the first release, use the `v0` tag for the GitHub Action.
 
 ```yaml
 name: Agentic Workflow Guard
