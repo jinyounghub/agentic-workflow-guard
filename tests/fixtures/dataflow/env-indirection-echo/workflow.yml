@@ -1,0 +1,20 @@
+name: Env indirection data output
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  env_echo:
+    runs-on: ubuntu-latest
+    steps:
+      - id: ai
+        uses: openai/codex-action@1111111111111111111111111111111111111111
+        with:
+          prompt: "Summarize this repository."
+      - name: Print env output
+        env:
+          AI_RESULT: ${{ steps.ai.outputs.result }}
+        run: echo "$AI_RESULT"

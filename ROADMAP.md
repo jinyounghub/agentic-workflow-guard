@@ -14,12 +14,12 @@
 
 ## v0.2.0
 
-- Config file support
-- Inline and baseline suppressions
-- More precise GitHub expression parsing
+- Config files, baselines, and config suppressions available on `main`
+- More precise GitHub expression parsing and AI-output data-flow tracking
 - Better action metadata ingestion for known AI actions
 - Rule documentation links in SARIF help
 - More safe patterns for data-only AI output handling
+- Inline suppression comments for narrow, reviewed exceptions
 
 ## v0.3.0
 

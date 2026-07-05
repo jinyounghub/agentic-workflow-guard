@@ -3,6 +3,11 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import {
+  extractGitHubExpressions,
+  extractStepOutputReferences,
+  normalizeExpressionBody,
+} from "../src/expressions.js";
 import { renderJsonReport } from "../src/json-report.js";
 import { renderMarkdownReport } from "../src/markdown-report.js";
 import { writeBaselineFile } from "../src/noise-control.js";
@@ -13,6 +18,33 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixtures = path.join(dirname, "fixtures");
 
 describe("agentic-workflow-guard scanner", () => {
+  it("extracts GitHub expressions and step output references inside wrappers", () => {
+    const value =
+      "sha=${{ github.sha }} result=${{ format('{0}', steps.ai.outputs.result) }} items=${{ join(steps.ai.outputs.items, ',') }} json=${{ toJson(steps.ai.outputs.result) }}";
+
+    expect(extractGitHubExpressions(value)).toHaveLength(4);
+    expect(normalizeExpressionBody("  format(  '{0}',   steps.ai.outputs.result )  ")).toBe(
+      "format( '{0}', steps.ai.outputs.result )",
+    );
+    expect(extractStepOutputReferences(value)).toEqual([
+      expect.objectContaining({
+        raw: "steps.ai.outputs.result",
+        stepId: "ai",
+        outputName: "result",
+      }),
+      expect.objectContaining({
+        raw: "steps.ai.outputs.items",
+        stepId: "ai",
+        outputName: "items",
+      }),
+      expect.objectContaining({
+        raw: "steps.ai.outputs.result",
+        stepId: "ai",
+        outputName: "result",
+      }),
+    ]);
+  });
+
   it("detects the MVP rule set in synthetic vulnerable workflows", async () => {
     const result = await scan({ paths: [path.join(fixtures, "vulnerable")] });
     const ids = new Set(result.results.map((finding) => finding.id));
@@ -43,6 +75,39 @@ describe("agentic-workflow-guard scanner", () => {
 
     const sarif = JSON.parse(renderSarifReport(result)) as { version: string };
     expect(sarif.version).toBe("2.1.0");
+  });
+
+  it("detects expression wrappers and one-step env indirection in AI output flows", async () => {
+    const result = await scan({ paths: [path.join(fixtures, "dataflow")] });
+    const byFile = (filePart: string, id: string) =>
+      result.results.find(
+        (finding) => finding.id === id && finding.file.replace(/\\/g, "/").includes(filePart),
+      );
+
+    expect(byFile("direct-expression/workflow.yml", "R104")).toBeTruthy();
+    expect(byFile("format-expression/workflow.yml", "R104")).toBeTruthy();
+
+    const envEcho = byFile("env-indirection-echo/workflow.yml", "R104");
+    expect(envEcho?.severity).toBe("medium");
+    expect(envEcho?.evidence).toContain("source: steps.ai.outputs.result");
+    expect(envEcho?.evidence).toContain("flow: env AI_RESULT -> $AI_RESULT");
+
+    const dynamicEnv = byFile("env-indirection-bash-c/workflow.yml", "R104");
+    expect(dynamicEnv?.severity).toBe("critical");
+    expect(dynamicEnv?.evidence).toContain("flow: env AI_RESULT -> $AI_RESULT");
+
+    const mergeSink = byFile("env-indirection-gh-merge/workflow.yml", "R105");
+    expect(mergeSink?.severity).toBe("critical");
+    expect(mergeSink?.evidence).toContain(
+      "sink: gh pr merge - Merges pull requests through the GitHub CLI.",
+    );
+
+    const dataOnlySink = byFile("data-only-output/workflow.yml", "R105");
+    expect(dataOnlySink).toBeUndefined();
+
+    const multiple = byFile("multiple-expressions/workflow.yml", "R104");
+    expect(multiple?.evidence).toContain("source: steps.ai.outputs.summary");
+    expect(multiple?.evidence).not.toContain("source: github.sha");
   });
 
   it("applies rule disable config without changing default behavior", async () => {

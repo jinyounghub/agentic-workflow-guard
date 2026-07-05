@@ -1,0 +1,20 @@
+name: Env indirection dynamic execution
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  env_exec:
+    runs-on: ubuntu-latest
+    steps:
+      - id: ai
+        uses: openai/codex-action@1111111111111111111111111111111111111111
+        with:
+          prompt: "Return a shell command."
+      - name: Execute env output
+        env:
+          AI_RESULT: ${{ steps.ai.outputs.result }}
+        run: bash -c "$AI_RESULT"

@@ -1,6 +1,11 @@
 import { findSensitiveSinks } from "../catalog/sensitive-sinks.js";
 import type { Rule, Severity } from "../types.js";
-import { findAiOutputReferences, locationForEvidence, result } from "./shared.js";
+import {
+  aiDerivedEvidence,
+  findAiDerivedReferencesInRun,
+  locationForEvidence,
+  result,
+} from "./shared.js";
 
 export const aiOutputToSensitiveSinkRule: Rule = ({ workflow }) => {
   const findings = [];
@@ -11,7 +16,7 @@ export const aiOutputToSensitiveSinkRule: Rule = ({ workflow }) => {
         continue;
       }
 
-      const references = findAiOutputReferences(step.run, aiStep.step);
+      const references = findAiDerivedReferencesInRun(step.run, aiStep.step, step.env);
       if (references.length === 0) {
         continue;
       }
@@ -24,7 +29,7 @@ export const aiOutputToSensitiveSinkRule: Rule = ({ workflow }) => {
       const severity: Severity = sinks.some((sink) => sink.severity === "critical")
         ? "critical"
         : "high";
-      const location = locationForEvidence(workflow.file.content, step, references[0]);
+      const location = locationForEvidence(workflow.file.content, step, references[0]?.raw);
       findings.push(
         result({
           id: "R105",
@@ -35,7 +40,10 @@ export const aiOutputToSensitiveSinkRule: Rule = ({ workflow }) => {
           line: location.line,
           column: location.column,
           message: "Agent-derived output is passed to a privileged CLI or deployment command.",
-          evidence: [...references, ...sinks.map((sink) => `${sink.label}: ${sink.reason}`)],
+          evidence: [
+            ...aiDerivedEvidence(references, step),
+            ...sinks.map((sink) => `sink: ${sink.label} - ${sink.reason}`),
+          ],
           recommendation:
             "Separate AI analysis from privileged operations. Use allowlisted commands, human approval, and typed inputs rather than free-form model output.",
           references: ["https://arxiv.org/pdf/2605.07135"],

@@ -10,6 +10,17 @@ export declare function writePermissions(value: unknown): string[];
 export declare function permissionsSeverity(writes: string[]): Severity;
 export declare function aiOutputExpression(step: WorkflowStep): RegExp | undefined;
 export declare function findAiOutputReferences(command: string, step: WorkflowStep): string[];
+export interface AiDerivedReference {
+    kind: "step-output" | "env";
+    raw: string;
+    source: string;
+    stepId: string;
+    outputName: string;
+    envName?: string;
+    flow: string;
+}
+export declare function findAiDerivedReferencesInRun(run: string, aiStep: WorkflowStep, stepEnv?: Record<string, unknown>): AiDerivedReference[];
+export declare function aiDerivedEvidence(references: AiDerivedReference[], step: WorkflowStep): string[];
 export declare function hasPrHeadCheckout(workflow: ParsedWorkflow): boolean;
 export declare function pwnRequestCheckoutSteps(workflow: ParsedWorkflow): WorkflowStep[];
 export declare function isCheckoutStep(step: WorkflowStep): boolean;

@@ -1,0 +1,18 @@
+name: Wrapped expression data flow
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  wrapped:
+    runs-on: ubuntu-latest
+    steps:
+      - id: ai
+        uses: openai/codex-action@1111111111111111111111111111111111111111
+        with:
+          prompt: "Summarize this repository."
+      - name: Print formatted AI output
+        run: echo "${{ format('{0}', steps.ai.outputs.result) }}"

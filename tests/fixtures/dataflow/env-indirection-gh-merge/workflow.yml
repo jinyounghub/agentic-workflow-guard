@@ -1,0 +1,21 @@
+name: Env indirection sensitive sink
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  env_merge:
+    runs-on: ubuntu-latest
+    steps:
+      - id: ai
+        uses: openai/codex-action@1111111111111111111111111111111111111111
+        with:
+          prompt: "Return the pull request number to merge."
+      - name: Merge env-selected pull request
+        env:
+          AI_RESULT: ${{ steps.ai.outputs.result }}
+        run: gh pr merge "$AI_RESULT" --merge

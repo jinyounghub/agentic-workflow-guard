@@ -1,6 +1,7 @@
 import { parseUses } from "../catalog/ai-actions.js";
+import { type StepOutputReference, extractStepOutputReferences } from "../expressions.js";
 import type { ParsedWorkflow, RuleResult, Severity, WorkflowJob, WorkflowStep } from "../types.js";
-import { findLineColumn, isRecord } from "../workflow-parser.js";
+import { findLineColumn, isRecord, scalarToString } from "../workflow-parser.js";
 
 export const sensitiveWritePermissions = [
   "actions",
@@ -81,6 +82,77 @@ export function findAiOutputReferences(command: string, step: WorkflowStep): str
   return [...command.matchAll(pattern)].map((match) => match[0]);
 }
 
+export interface AiDerivedReference {
+  kind: "step-output" | "env";
+  raw: string;
+  source: string;
+  stepId: string;
+  outputName: string;
+  envName?: string;
+  flow: string;
+}
+
+export function findAiDerivedReferencesInRun(
+  run: string,
+  aiStep: WorkflowStep,
+  stepEnv?: Record<string, unknown>,
+): AiDerivedReference[] {
+  if (!aiStep.id) {
+    return [];
+  }
+
+  const references: AiDerivedReference[] = [];
+  for (const reference of extractStepOutputReferences(run).filter(
+    (item) => item.stepId === aiStep.id,
+  )) {
+    references.push({
+      kind: "step-output",
+      raw: reference.expression?.raw ?? reference.raw,
+      source: formatStepOutputSource(reference),
+      stepId: reference.stepId,
+      outputName: reference.outputName,
+      flow: "direct expression -> run",
+    });
+  }
+
+  for (const [envName, envValue] of Object.entries(stepEnv ?? {})) {
+    const envText = scalarToString(envValue);
+    if (!envText) {
+      continue;
+    }
+
+    const outputReferences = extractStepOutputReferences(envText).filter(
+      (item) => item.stepId === aiStep.id,
+    );
+    if (outputReferences.length === 0 || !runUsesEnvName(run, envName)) {
+      continue;
+    }
+
+    for (const reference of outputReferences) {
+      references.push({
+        kind: "env",
+        raw: envUsageEvidence(run, envName) ?? envName,
+        source: formatStepOutputSource(reference),
+        stepId: reference.stepId,
+        outputName: reference.outputName,
+        envName,
+        flow: `env ${envName} -> ${envUsageEvidence(run, envName) ?? "run"}`,
+      });
+    }
+  }
+
+  return dedupeAiDerivedReferences(references);
+}
+
+export function aiDerivedEvidence(references: AiDerivedReference[], step: WorkflowStep): string[] {
+  const sinkName = step.name ?? step.id ?? `step ${step.index + 1}`;
+  return references.flatMap((reference) => [
+    `source: ${reference.source}`,
+    `sink: run step "${sinkName}"`,
+    `flow: ${reference.flow}`,
+  ]);
+}
+
 export function hasPrHeadCheckout(workflow: ParsedWorkflow): boolean {
   return pwnRequestCheckoutSteps(workflow).length > 0;
 }
@@ -147,6 +219,46 @@ export function relativeEvidencePath(file: string): string {
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function formatStepOutputSource(reference: StepOutputReference): string {
+  return `steps.${reference.stepId}.outputs.${reference.outputName}`;
+}
+
+function runUsesEnvName(run: string, envName: string): boolean {
+  return envUsagePattern(envName).test(run);
+}
+
+function envUsageEvidence(run: string, envName: string): string | undefined {
+  return run.match(envUsagePattern(envName))?.[0];
+}
+
+function envUsagePattern(envName: string): RegExp {
+  const escaped = escapeRegExp(envName);
+  return new RegExp(
+    String.raw`(?:\$\{${escaped}\}|\$${escaped}\b|\$env:${escaped}\b|%${escaped}%)`,
+    "i",
+  );
+}
+
+function dedupeAiDerivedReferences(references: AiDerivedReference[]): AiDerivedReference[] {
+  const seen = new Set<string>();
+  const deduped: AiDerivedReference[] = [];
+  for (const reference of references) {
+    const key = [
+      reference.kind,
+      reference.raw,
+      reference.source,
+      reference.envName ?? "",
+      reference.flow,
+    ].join("\0");
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    deduped.push(reference);
+  }
+  return deduped;
 }
 
 const prHeadContextPattern =

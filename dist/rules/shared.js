@@ -1,5 +1,6 @@
 import { parseUses } from "../catalog/ai-actions.js";
-import { findLineColumn, isRecord } from "../workflow-parser.js";
+import { extractStepOutputReferences } from "../expressions.js";
+import { findLineColumn, isRecord, scalarToString } from "../workflow-parser.js";
 export const sensitiveWritePermissions = [
     "actions",
     "checks",
@@ -58,6 +59,52 @@ export function findAiOutputReferences(command, step) {
     }
     return [...command.matchAll(pattern)].map((match) => match[0]);
 }
+export function findAiDerivedReferencesInRun(run, aiStep, stepEnv) {
+    if (!aiStep.id) {
+        return [];
+    }
+    const references = [];
+    for (const reference of extractStepOutputReferences(run).filter((item) => item.stepId === aiStep.id)) {
+        references.push({
+            kind: "step-output",
+            raw: reference.expression?.raw ?? reference.raw,
+            source: formatStepOutputSource(reference),
+            stepId: reference.stepId,
+            outputName: reference.outputName,
+            flow: "direct expression -> run",
+        });
+    }
+    for (const [envName, envValue] of Object.entries(stepEnv ?? {})) {
+        const envText = scalarToString(envValue);
+        if (!envText) {
+            continue;
+        }
+        const outputReferences = extractStepOutputReferences(envText).filter((item) => item.stepId === aiStep.id);
+        if (outputReferences.length === 0 || !runUsesEnvName(run, envName)) {
+            continue;
+        }
+        for (const reference of outputReferences) {
+            references.push({
+                kind: "env",
+                raw: envUsageEvidence(run, envName) ?? envName,
+                source: formatStepOutputSource(reference),
+                stepId: reference.stepId,
+                outputName: reference.outputName,
+                envName,
+                flow: `env ${envName} -> ${envUsageEvidence(run, envName) ?? "run"}`,
+            });
+        }
+    }
+    return dedupeAiDerivedReferences(references);
+}
+export function aiDerivedEvidence(references, step) {
+    const sinkName = step.name ?? step.id ?? `step ${step.index + 1}`;
+    return references.flatMap((reference) => [
+        `source: ${reference.source}`,
+        `sink: run step "${sinkName}"`,
+        `flow: ${reference.flow}`,
+    ]);
+}
 export function hasPrHeadCheckout(workflow) {
     return pwnRequestCheckoutSteps(workflow).length > 0;
 }
@@ -110,6 +157,38 @@ export function relativeEvidencePath(file) {
 }
 function escapeRegExp(value) {
     return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+function formatStepOutputSource(reference) {
+    return `steps.${reference.stepId}.outputs.${reference.outputName}`;
+}
+function runUsesEnvName(run, envName) {
+    return envUsagePattern(envName).test(run);
+}
+function envUsageEvidence(run, envName) {
+    return run.match(envUsagePattern(envName))?.[0];
+}
+function envUsagePattern(envName) {
+    const escaped = escapeRegExp(envName);
+    return new RegExp(String.raw `(?:\$\{${escaped}\}|\$${escaped}\b|\$env:${escaped}\b|%${escaped}%)`, "i");
+}
+function dedupeAiDerivedReferences(references) {
+    const seen = new Set();
+    const deduped = [];
+    for (const reference of references) {
+        const key = [
+            reference.kind,
+            reference.raw,
+            reference.source,
+            reference.envName ?? "",
+            reference.flow,
+        ].join("\0");
+        if (seen.has(key)) {
+            continue;
+        }
+        seen.add(key);
+        deduped.push(reference);
+    }
+    return deduped;
 }
 const prHeadContextPattern = /github\.event\.pull_request\.head\.(?:sha|ref|repo\.full_name)|github\.head_ref/i;
 const refsPullHeadPattern = /refs\/pull\/[^/]+\/(?:head|merge)/i;
