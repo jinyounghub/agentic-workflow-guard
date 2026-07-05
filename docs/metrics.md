@@ -2,6 +2,20 @@
 
 This page tracks real, dated public project health and adoption signals. Do not inflate, estimate, or backfill adoption numbers.
 
+## Snapshot: 2026-07-05 UTC after v0.1.1
+
+| Metric | Value | Evidence / notes |
+| --- | ---: | --- |
+| Latest GitHub release | `v0.1.1` | Published 2026-07-05 UTC |
+| npm version | `0.1.1` | `npm view @jin0/agentic-workflow-guard version` |
+| npm dist tag | `latest: 0.1.1` | `npm view @jin0/agentic-workflow-guard dist-tags` |
+| npm clean install smoke test | Pass | Tested after publish |
+| `v0` action tag | `v0.1.1` | `v0` and `v0.1.1` point to commit `c378ec6` |
+| Open issues | `5` | #1, #2, #5, #6, #7 |
+| Closed issues | `2` | #3, #4 |
+| External adopters | `0` | No known external adopters yet |
+| Owned repo adoption examples | `0` | Next step |
+
 ## Snapshot: 2026-07-05 UTC
 
 | Metric | Value | Evidence / notes |
