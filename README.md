@@ -7,6 +7,10 @@
 
 Static analyzer and GitHub Action for detecting Agentic Workflow Injection risks in AI-powered GitHub Actions workflows.
 
+`agentic-workflow-guard` is a deterministic scanner for AI-agent GitHub Actions workflows. It detects workflow-level paths where untrusted issue, PR, comment, branch, or commit text reaches an AI prompt and then flows toward scripts, write-scoped tokens, release commands, package publishing, cloud CLIs, or secrets.
+
+Use it when you run Codex, Claude Code, Gemini CLI, GitHub Models, or similar AI actions in CI.
+
 `agentic-workflow-guard` is not an AI PR reviewer, an AGENTS.md linter, an MCP scanner, or a replacement for general GitHub Actions security scanners. It focuses on one boundary: untrusted GitHub event data reaching AI agent prompts, then flowing into write permissions, scripts, release commands, or secrets.
 
 Use zizmor for general GitHub Actions security. Use agentic-workflow-guard for AI-agent-specific workflow injection paths.
@@ -98,6 +102,9 @@ jobs:
 See [docs/adoption.md](docs/adoption.md) for rollout guidance. Ready-to-copy
 workflow examples are available in [examples](examples), including advisory,
 config/baseline, blocking, and SARIF upload modes.
+
+Public v0.2 announcement notes and feedback-request snippets are available in
+[docs/announcement.md](docs/announcement.md).
 
 ## Current maturity
 

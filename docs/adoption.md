@@ -40,6 +40,19 @@ jobs:
 
 See [configuration](configuration.md) and [baselines and suppressions](baselines-and-suppressions.md).
 
+## Try It Safely
+
+Start in advisory mode:
+
+```yaml
+with:
+  fail-on: never
+  format: markdown
+```
+
+Review the findings, add baselines for existing accepted findings, and only
+later move to `fail-on: high`.
+
 ## Ready-to-copy Examples
 
 Use the examples that match your rollout stage:

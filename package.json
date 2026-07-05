@@ -17,8 +17,13 @@
   },
   "keywords": [
     "github-actions",
+    "github-action",
     "security",
     "static-analysis",
+    "workflow-security",
+    "ci-security",
+    "ai-security",
+    "ai-agent",
     "agentic-workflow-injection",
     "prompt-injection",
     "sarif"
