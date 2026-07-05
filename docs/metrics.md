@@ -2,6 +2,20 @@
 
 This page tracks real, dated public project health and adoption signals. Do not inflate, estimate, or backfill adoption numbers.
 
+## Snapshot: 2026-07-05 UTC after catalog verification PR merge
+
+| Metric | Value | Evidence / notes |
+| --- | ---: | --- |
+| Latest GitHub release | `v0.1.1` | Latest published release; catalog verification metadata is unreleased |
+| npm version | `0.1.1` | `npm view @jin0/agentic-workflow-guard version` |
+| Main CI | Pass | Run `28740395037` after PR #13 merge |
+| Merged pull requests | `5` | #9, #10, #11, #12, #13 |
+| Open issues | `1` | #7 |
+| Closed issues | `6` | #1, #2, #3, #4, #5, #6 |
+| Latest unreleased changes | config/baseline/suppression, expression/data-flow precision, verified AI action catalog metadata | Merged through #13 |
+| External adopters | `0` | No known external adopters yet |
+| Owned repo adoption examples | `1` | `jinyounghub/approach-key-privacy` uses the GitHub Action in CI |
+
 ## Snapshot: 2026-07-05 UTC after data-flow PR merge
 
 | Metric | Value | Evidence / notes |
