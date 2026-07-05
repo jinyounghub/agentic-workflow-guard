@@ -79,3 +79,5 @@ Flags `secrets.*` values in AI action `env`. Provider-only API keys are medium. 
 Rules can be disabled or assigned an effective severity in `awi-guard.config.yml`. The original rule severity remains in JSON and SARIF output, while `effectiveSeverity` is used for summaries and `fail-on` decisions.
 
 Use rule overrides sparingly. Prefer fixing high-risk workflow patterns when possible.
+
+For rule ID, severity, fixture, and test conventions, see [Adding a Rule](adding-a-rule.md).

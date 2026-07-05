@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - Add baseline support for accepted existing findings.
 - Add finding fingerprints and active/suppressed/baselined report state.
 - Improve GitHub expression handling and one-step env data-flow detection for AI output references.
+- Add contributor onboarding docs and beginner-friendly synthetic fixtures.
 
 ## 0.1.1 - 2026-07-05
 

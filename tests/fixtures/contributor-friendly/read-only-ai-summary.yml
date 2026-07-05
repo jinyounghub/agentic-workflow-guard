@@ -1,0 +1,15 @@
+name: Contributor Friendly Safe AI Summary
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  summarize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: openai/codex-action@1111111111111111111111111111111111111111
+        with:
+          prompt: Summarize the repository README as advisory text only.

@@ -186,6 +186,12 @@ See [docs/responsible-disclosure.md](docs/responsible-disclosure.md) and [SECURI
 
 Project health and adoption signals are tracked in [docs/metrics.md](docs/metrics.md). Metrics are intentionally conservative and should not list adopters or usage that cannot be verified.
 
+## Contributing
+
+Small, synthetic fixture PRs are welcome. Start with
+[CONTRIBUTING.md](CONTRIBUTING.md), [docs/adding-a-rule.md](docs/adding-a-rule.md),
+and [docs/fixture-conventions.md](docs/fixture-conventions.md).
+
 ## Development
 
 ```bash
