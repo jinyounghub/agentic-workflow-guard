@@ -105,6 +105,7 @@ The published npm package is smoke-tested with a clean install and both CLI alia
 
 ```bash
 npm install --save-dev @jin0/agentic-workflow-guard
+npx @jin0/agentic-workflow-guard scan --help
 npx agentic-workflow-guard --help
 npx awi-guard --help
 ```
