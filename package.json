@@ -1,6 +1,6 @@
 {
   "name": "@jin0/agentic-workflow-guard",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Static analyzer and GitHub Action for detecting Agentic Workflow Injection risks in AI-powered GitHub Actions workflows.",
   "type": "module",
   "bin": {

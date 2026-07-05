@@ -2,6 +2,25 @@
 
 This page tracks real, dated public project health and adoption signals. Do not inflate, estimate, or backfill adoption numbers.
 
+## Snapshot: 2026-07-05 UTC
+
+| Metric | Value | Evidence / notes |
+| --- | ---: | --- |
+| GitHub repository | `jinyounghub/agentic-workflow-guard` | Public repository |
+| Latest GitHub release | `v0.1.0` | `v0.1.1` pending |
+| npm package | `@jin0/agentic-workflow-guard` | Published package |
+| npm version | `0.1.0` | `v0.1.1` pending |
+| npm clean install smoke test | Pass | See `docs/npm-smoke-test.md` |
+| `npx` smoke test | Pass | `agentic-workflow-guard`, `awi-guard`, scoped package invocation |
+| CI | Configured | lint, tests, build, package smoke test, self-scan artifacts |
+| GitHub stars | `0` | GitHub repository metadata |
+| GitHub forks | `0` | GitHub repository metadata |
+| Open issues | `5` | #1, #2, #5, #6, #7 |
+| Closed issues | `2` | #3, #4 |
+| Pull requests | `0` | GitHub repository metadata |
+| External adopters | `0` | No known external adopters yet |
+| Owned repo adoption examples | `0` | Next step |
+
 ## Snapshot: 2026-07-04 UTC
 
 | Metric | Value | Evidence / notes |

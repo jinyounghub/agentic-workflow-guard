@@ -23,7 +23,7 @@
 
 ## v0.3.0
 
-- Optional OpenAI-assisted explanation mode
+- Optional LLM-assisted explanation mode
 - Safer workflow rewrite suggestions
 - Expanded catalog for emerging AI agent actions
 - Composite action analysis

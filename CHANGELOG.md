@@ -4,8 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.1.1 - 2026-07-05
+
 - Add public package smoke-test evidence, self-scan CI artifacts, and project health metrics.
-- Remove private program-application planning material from the public repository.
+- Remove private planning material from the public repository.
+- Add adoption guidance and release checklist documentation.
+- Improve README badges, package usage examples, and public maturity notes.
 
 ## 0.1.0 - 2026-07-04
 
