@@ -1,0 +1,20 @@
+name: Data-only output
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  data_only:
+    runs-on: ubuntu-latest
+    steps:
+      - id: ai
+        uses: openai/codex-action@1111111111111111111111111111111111111111
+        with:
+          prompt: "Summarize this repository."
+      - name: Save AI summary as data
+        run: |
+          mkdir -p reports
+          printf '%s\n' "${{ steps.ai.outputs.summary }}" > reports/summary.txt

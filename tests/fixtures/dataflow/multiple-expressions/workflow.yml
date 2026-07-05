@@ -1,0 +1,20 @@
+name: Multiple expressions
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  multiple:
+    runs-on: ubuntu-latest
+    steps:
+      - id: ai
+        uses: openai/codex-action@1111111111111111111111111111111111111111
+        with:
+          prompt: "Summarize this repository."
+      - name: Print selected expressions
+        run: |
+          echo "${{ github.sha }}"
+          echo "${{ steps.ai.outputs.summary }}"

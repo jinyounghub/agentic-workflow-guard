@@ -47980,7 +47980,49 @@ function escapeRegExp(value) {
     return value.replace(/[\\^$.*+?()[\]{}|]/g, "\\$&");
 }
 //# sourceMappingURL=noise-control.js.map
+;// CONCATENATED MODULE: ./dist/expressions.js
+const expressionPattern = /\$\{\{([\s\S]*?)\}\}/g;
+const stepOutputPattern = /\bsteps\s*\.\s*([A-Za-z0-9_-]+)\s*\.\s*outputs\s*\.\s*([A-Za-z0-9_-]+)\b/g;
+function extractGitHubExpressions(value) {
+    return [...value.matchAll(expressionPattern)].map((match) => ({
+        raw: match[0],
+        body: match[1] ?? "",
+        start: match.index ?? 0,
+        end: (match.index ?? 0) + match[0].length,
+    }));
+}
+function normalizeExpressionBody(value) {
+    return value.trim().replace(/\s+/g, " ");
+}
+function expressionMentions(value, pattern) {
+    return extractGitHubExpressions(value).some((expression) => {
+        pattern.lastIndex = 0;
+        return pattern.test(normalizeExpressionBody(expression.body));
+    });
+}
+function extractStepOutputReferences(value) {
+    const expressions = extractGitHubExpressions(value);
+    if (expressions.length === 0) {
+        return referencesInText(value);
+    }
+    return expressions.flatMap((expression) => referencesInText(expression.body).map((reference) => ({
+        ...reference,
+        expression,
+    })));
+}
+function referencesInText(value) {
+    return [...value.matchAll(stepOutputPattern)].map((match) => ({
+        raw: normalizeReference(match[0]),
+        stepId: match[1] ?? "",
+        outputName: match[2] ?? "",
+    }));
+}
+function normalizeReference(value) {
+    return value.replace(/\s+/g, "");
+}
+//# sourceMappingURL=expressions.js.map
 ;// CONCATENATED MODULE: ./dist/rules/shared.js
+
 
 
 const sensitiveWritePermissions = [
@@ -48041,6 +48083,52 @@ function findAiOutputReferences(command, step) {
     }
     return [...command.matchAll(pattern)].map((match) => match[0]);
 }
+function findAiDerivedReferencesInRun(run, aiStep, stepEnv) {
+    if (!aiStep.id) {
+        return [];
+    }
+    const references = [];
+    for (const reference of extractStepOutputReferences(run).filter((item) => item.stepId === aiStep.id)) {
+        references.push({
+            kind: "step-output",
+            raw: reference.expression?.raw ?? reference.raw,
+            source: formatStepOutputSource(reference),
+            stepId: reference.stepId,
+            outputName: reference.outputName,
+            flow: "direct expression -> run",
+        });
+    }
+    for (const [envName, envValue] of Object.entries(stepEnv ?? {})) {
+        const envText = scalarToString(envValue);
+        if (!envText) {
+            continue;
+        }
+        const outputReferences = extractStepOutputReferences(envText).filter((item) => item.stepId === aiStep.id);
+        if (outputReferences.length === 0 || !runUsesEnvName(run, envName)) {
+            continue;
+        }
+        for (const reference of outputReferences) {
+            references.push({
+                kind: "env",
+                raw: envUsageEvidence(run, envName) ?? envName,
+                source: formatStepOutputSource(reference),
+                stepId: reference.stepId,
+                outputName: reference.outputName,
+                envName,
+                flow: `env ${envName} -> ${envUsageEvidence(run, envName) ?? "run"}`,
+            });
+        }
+    }
+    return dedupeAiDerivedReferences(references);
+}
+function aiDerivedEvidence(references, step) {
+    const sinkName = step.name ?? step.id ?? `step ${step.index + 1}`;
+    return references.flatMap((reference) => [
+        `source: ${reference.source}`,
+        `sink: run step "${sinkName}"`,
+        `flow: ${reference.flow}`,
+    ]);
+}
 function hasPrHeadCheckout(workflow) {
     return pwnRequestCheckoutSteps(workflow).length > 0;
 }
@@ -48094,6 +48182,38 @@ function relativeEvidencePath(file) {
 function shared_escapeRegExp(value) {
     return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
+function formatStepOutputSource(reference) {
+    return `steps.${reference.stepId}.outputs.${reference.outputName}`;
+}
+function runUsesEnvName(run, envName) {
+    return envUsagePattern(envName).test(run);
+}
+function envUsageEvidence(run, envName) {
+    return run.match(envUsagePattern(envName))?.[0];
+}
+function envUsagePattern(envName) {
+    const escaped = shared_escapeRegExp(envName);
+    return new RegExp(String.raw `(?:\$\{${escaped}\}|\$${escaped}\b|\$env:${escaped}\b|%${escaped}%)`, "i");
+}
+function dedupeAiDerivedReferences(references) {
+    const seen = new Set();
+    const deduped = [];
+    for (const reference of references) {
+        const key = [
+            reference.kind,
+            reference.raw,
+            reference.source,
+            reference.envName ?? "",
+            reference.flow,
+        ].join("\0");
+        if (seen.has(key)) {
+            continue;
+        }
+        seen.add(key);
+        deduped.push(reference);
+    }
+    return deduped;
+}
 const prHeadContextPattern = /github\.event\.pull_request\.head\.(?:sha|ref|repo\.full_name)|github\.head_ref/i;
 const refsPullHeadPattern = /refs\/pull\/[^/]+\/(?:head|merge)/i;
 //# sourceMappingURL=shared.js.map
@@ -48124,6 +48244,12 @@ const sensitiveSinkPatterns = [
         severity: "high",
         pattern: /\bgh\s+issue\s+edit\b/i,
         reason: "Edits issue state through the GitHub CLI.",
+    },
+    {
+        label: "gh issue comment",
+        severity: "high",
+        pattern: /\bgh\s+issue\s+comment\b/i,
+        reason: "Posts agent-derived text back to issues.",
     },
     {
         label: "gh pr comment",
@@ -48174,6 +48300,12 @@ const sensitiveSinkPatterns = [
         reason: "Calls AWS APIs from a workflow step.",
     },
     {
+        label: "aws cloudformation deploy",
+        severity: "critical",
+        pattern: /\baws\s+cloudformation\s+deploy\b/i,
+        reason: "Deploys infrastructure through AWS CloudFormation.",
+    },
+    {
         label: "gcloud",
         severity: "high",
         pattern: /(^|\s)gcloud\s+[A-Za-z0-9_-]+/i,
@@ -48190,6 +48322,12 @@ const sensitiveSinkPatterns = [
         severity: "high",
         pattern: /\bkubectl\s+/i,
         reason: "Modifies or reads Kubernetes clusters.",
+    },
+    {
+        label: "kubectl apply",
+        severity: "critical",
+        pattern: /\bkubectl\s+apply\b/i,
+        reason: "Applies Kubernetes manifests to a cluster.",
     },
     {
         label: "helm upgrade",
@@ -48216,7 +48354,7 @@ const sensitiveSinkPatterns = [
         reason: "Executes a dynamically constructed shell command.",
     },
 ];
-const dynamicExecutionPattern = /\b(eval|bash\s+-c|sh\s+-c|node\s+-e|python\s+-c|python3\s+-c)\b/i;
+const dynamicExecutionPattern = /\b(eval|bash\s+-c|sh\s+-c|node\s+-e|python\s+-c|python3\s+-c|ruby\s+-e|perl\s+-e)\b/i;
 function findSensitiveSinks(command) {
     return sensitiveSinkPatterns.filter((sink) => sink.pattern.test(command));
 }
@@ -48231,7 +48369,7 @@ const aiOutputToSensitiveSinkRule = ({ workflow }) => {
             if (step.index <= aiStep.step.index || !step.run) {
                 continue;
             }
-            const references = findAiOutputReferences(step.run, aiStep.step);
+            const references = findAiDerivedReferencesInRun(step.run, aiStep.step, step.env);
             if (references.length === 0) {
                 continue;
             }
@@ -48242,7 +48380,7 @@ const aiOutputToSensitiveSinkRule = ({ workflow }) => {
             const severity = sinks.some((sink) => sink.severity === "critical")
                 ? "critical"
                 : "high";
-            const location = locationForEvidence(workflow.file.content, step, references[0]);
+            const location = locationForEvidence(workflow.file.content, step, references[0]?.raw);
             findings.push(result({
                 id: "R105",
                 title: "AI output flows into a sensitive sink",
@@ -48252,7 +48390,10 @@ const aiOutputToSensitiveSinkRule = ({ workflow }) => {
                 line: location.line,
                 column: location.column,
                 message: "Agent-derived output is passed to a privileged CLI or deployment command.",
-                evidence: [...references, ...sinks.map((sink) => `${sink.label}: ${sink.reason}`)],
+                evidence: [
+                    ...aiDerivedEvidence(references, step),
+                    ...sinks.map((sink) => `sink: ${sink.label} - ${sink.reason}`),
+                ],
                 recommendation: "Separate AI analysis from privileged operations. Use allowlisted commands, human approval, and typed inputs rather than free-form model output.",
                 references: ["https://arxiv.org/pdf/2605.07135"],
                 tags: ["prompt-to-script", "sensitive-sink", "ai-output"],
@@ -48364,12 +48505,12 @@ const promptToScriptRule = ({ workflow }) => {
             if (step.index <= aiStep.step.index || !step.run) {
                 continue;
             }
-            const references = findAiOutputReferences(step.run, aiStep.step);
+            const references = findAiDerivedReferencesInRun(step.run, aiStep.step, step.env);
             if (references.length === 0) {
                 continue;
             }
-            const severity = dynamicExecutionPattern.test(step.run) ? "critical" : "high";
-            const location = locationForEvidence(workflow.file.content, step, references[0]);
+            const severity = severityForRun(step.run, references);
+            const location = locationForEvidence(workflow.file.content, step, references[0]?.raw);
             findings.push(result({
                 id: "R104",
                 title: "AI output flows into a script step",
@@ -48379,7 +48520,7 @@ const promptToScriptRule = ({ workflow }) => {
                 line: location.line,
                 column: location.column,
                 message: `A later run step consumes output from AI step "${aiStep.step.id}".`,
-                evidence: references,
+                evidence: aiDerivedEvidence(references, step),
                 recommendation: "Treat AI output as untrusted data. Do not execute it directly; validate it, store it as an artifact, or require human approval before script execution.",
                 references: ["https://arxiv.org/pdf/2605.07135"],
                 tags: ["prompt-to-script", "data-flow", "ai-output"],
@@ -48388,6 +48529,35 @@ const promptToScriptRule = ({ workflow }) => {
     }
     return findings;
 };
+function severityForRun(run, references) {
+    if (hasDynamicAiDerivedUse(run, references)) {
+        return "critical";
+    }
+    if (isRecognizedDataOnlyRun(run)) {
+        return "medium";
+    }
+    return "high";
+}
+function hasDynamicAiDerivedUse(run, references) {
+    if (dynamicExecutionPattern.test(run)) {
+        return true;
+    }
+    if (!/(?:\$\(|`)/.test(run)) {
+        return false;
+    }
+    return references.some((reference) => run.includes(reference.raw) || run.includes(reference.source));
+}
+function isRecognizedDataOnlyRun(run) {
+    if (dynamicExecutionPattern.test(run) || /(?:\$\(|`)/.test(run)) {
+        return false;
+    }
+    const lines = run
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter((line) => line && !line.startsWith("#"));
+    return (lines.length > 0 &&
+        lines.every((line) => !/[|;&]/.test(line) && /^(?:echo\b|printf\b|mkdir\b|cat\s+<<|tee\b|:)/.test(line)));
+}
 //# sourceMappingURL=prompt-to-script.js.map
 ;// CONCATENATED MODULE: ./dist/rules/pull-request-target-agent.js
 

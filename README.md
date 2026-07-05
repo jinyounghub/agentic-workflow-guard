@@ -99,7 +99,7 @@ See [docs/adoption.md](docs/adoption.md) for rollout guidance. SARIF upload exam
 
 ## Current maturity
 
-This is an early `v0.x` project. The scanner is useful for finding high-risk AI-agent workflow patterns, but false positives are expected while config, baselines, suppressions, and deeper GitHub expression parsing are still on the roadmap.
+This is an early `v0.x` project. The current published release is `v0.1.1`; config files, baselines, and narrow suppressions are available on `main` and planned for the next minor release. False positives are still expected while deeper GitHub expression parsing and data-flow precision continue to improve.
 
 Use it first as an advisory CI check with `fail-on: never`, then raise the fail threshold after reviewing findings.
 
@@ -133,7 +133,7 @@ See [docs/npm-smoke-test.md](docs/npm-smoke-test.md) for the latest recorded smo
 | `R101` | High | Untrusted issue, PR, comment, commit, or dispatch input reaching an AI prompt |
 | `R102` | Medium/High | AI step in a job with write-scoped token permissions |
 | `R103` | High/Critical | AI action running in `pull_request_target` |
-| `R104` | High/Critical | AI step output consumed by a later `run:` step |
+| `R104` | Medium/High/Critical | AI step output consumed by a later `run:` step, including direct expressions and one-step env indirection |
 | `R105` | High/Critical | AI output reaching sensitive sinks such as `gh pr merge`, `git push`, `npm publish`, cloud CLIs, or deployment commands |
 | `R106` | High/Critical | `pull_request_target` or `workflow_run` checking out PR head code |
 | `R107` | Medium | AI action not pinned to a full commit SHA |
@@ -158,11 +158,13 @@ The scanner also has a low-confidence pattern detector for action names containi
 This project is conservative by design. Common false positive areas:
 
 - A prompt contains PR text but the agent is truly sandboxed and read-only.
-- AI output is printed as data in a later `run:` step.
+- AI output is printed as data in a later `run:` step. Recognized `echo`/`printf`-style data-only output is reported at lower severity than dynamic execution.
 - A provider API key is necessary for the AI action and is isolated from other secrets.
 - A version tag is protected by repository policy even though it is not a full SHA.
 
 Prefer narrowing workflow permissions and splitting untrusted analysis from privileged writes. Use baselines for existing findings that still need review, and use suppressions only for narrow accepted findings with a clear reason.
+
+See [docs/data-flow-model.md](docs/data-flow-model.md) for the currently tracked AI-output sources, sinks, and known limitations.
 
 ## How this differs from nearby tools
 

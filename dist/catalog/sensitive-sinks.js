@@ -6,6 +6,12 @@ export const sensitiveSinkPatterns = [
         reason: "Edits issue state through the GitHub CLI.",
     },
     {
+        label: "gh issue comment",
+        severity: "high",
+        pattern: /\bgh\s+issue\s+comment\b/i,
+        reason: "Posts agent-derived text back to issues.",
+    },
+    {
         label: "gh pr comment",
         severity: "high",
         pattern: /\bgh\s+pr\s+comment\b/i,
@@ -54,6 +60,12 @@ export const sensitiveSinkPatterns = [
         reason: "Calls AWS APIs from a workflow step.",
     },
     {
+        label: "aws cloudformation deploy",
+        severity: "critical",
+        pattern: /\baws\s+cloudformation\s+deploy\b/i,
+        reason: "Deploys infrastructure through AWS CloudFormation.",
+    },
+    {
         label: "gcloud",
         severity: "high",
         pattern: /(^|\s)gcloud\s+[A-Za-z0-9_-]+/i,
@@ -70,6 +82,12 @@ export const sensitiveSinkPatterns = [
         severity: "high",
         pattern: /\bkubectl\s+/i,
         reason: "Modifies or reads Kubernetes clusters.",
+    },
+    {
+        label: "kubectl apply",
+        severity: "critical",
+        pattern: /\bkubectl\s+apply\b/i,
+        reason: "Applies Kubernetes manifests to a cluster.",
     },
     {
         label: "helm upgrade",
@@ -96,7 +114,7 @@ export const sensitiveSinkPatterns = [
         reason: "Executes a dynamically constructed shell command.",
     },
 ];
-export const dynamicExecutionPattern = /\b(eval|bash\s+-c|sh\s+-c|node\s+-e|python\s+-c|python3\s+-c)\b/i;
+export const dynamicExecutionPattern = /\b(eval|bash\s+-c|sh\s+-c|node\s+-e|python\s+-c|python3\s+-c|ruby\s+-e|perl\s+-e)\b/i;
 export function findSensitiveSinks(command) {
     return sensitiveSinkPatterns.filter((sink) => sink.pattern.test(command));
 }

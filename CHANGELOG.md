@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 - Add config file support for rule disabling, severity overrides, path excludes, and narrow suppressions.
 - Add baseline support for accepted existing findings.
 - Add finding fingerprints and active/suppressed/baselined report state.
+- Improve GitHub expression handling and one-step env data-flow detection for AI output references.
 
 ## 0.1.1 - 2026-07-05
 

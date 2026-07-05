@@ -31,17 +31,19 @@ Flags AI actions in `pull_request_target` workflows. Escalates to critical when 
 
 ## R104: AI output flows into a script step
 
-Flags `${{ steps.<ai-step>.outputs.* }}` references in later `run:` steps in the same job. Escalates to critical for dynamic execution patterns such as `bash -c`, `sh -c`, `eval`, `node -e`, or `python -c`.
+Flags `${{ steps.<ai-step>.outputs.* }}` references in later `run:` steps in the same job, including common expression wrappers and one-step `env` indirection. Escalates to critical for dynamic execution patterns such as `bash -c`, `sh -c`, `eval`, `node -e`, `python -c`, `ruby -e`, or `perl -e`. Recognized data-only output such as simple `echo` or `printf` usage is reported at medium severity.
 
-- Severity: high or critical
+- Severity: medium, high, or critical
 - Tags: `prompt-to-script`, `data-flow`, `ai-output`
+- Evidence includes the AI output source, the `run` step sink, and the direct or env-mediated flow.
 
 ## R105: AI output flows into a sensitive sink
 
-Flags AI output reaching privileged commands such as GitHub CLI writes, package publishing, container pushes, cloud CLIs, or deployment tools.
+Flags AI output reaching privileged commands such as GitHub CLI writes, package publishing, container pushes, cloud CLIs, or deployment tools. Direct step-output expressions and one-step `env` indirection are both tracked.
 
 - Severity: high or critical
 - Tags: `prompt-to-script`, `sensitive-sink`, `ai-output`
+- Evidence includes the AI output source, the `run` step sink, the data-flow path, and the matched sensitive command.
 
 ## R106: Privileged workflow checks out pull request head code
 
