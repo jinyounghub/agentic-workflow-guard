@@ -2,6 +2,19 @@
 
 This page tracks real, dated public project health and adoption signals. Do not inflate, estimate, or backfill adoption numbers.
 
+## Snapshot: 2026-07-05 UTC after data-flow PR merge
+
+| Metric | Value | Evidence / notes |
+| --- | ---: | --- |
+| Latest GitHub release | `v0.1.1` | Latest published release; data-flow precision is unreleased |
+| Main CI | Pass | Run `28739508904` after PR #11 merge |
+| Merged pull requests | `3` | #9, #10, #11 |
+| Open issues | `2` | #5, #7 |
+| Closed issues | `5` | #1, #2, #3, #4, #6 |
+| Latest unreleased changes | config/baseline/suppression, expression/data-flow precision | Merged through #9 and #11 |
+| External adopters | `0` | No known external adopters yet |
+| Owned repo adoption examples | `1` | `jinyounghub/approach-key-privacy` uses the GitHub Action in CI |
+
 ## Snapshot: 2026-07-05 UTC after config PR merge
 
 | Metric | Value | Evidence / notes |
