@@ -2,6 +2,18 @@
 
 This page tracks real, dated public project health and adoption signals. Do not inflate, estimate, or backfill adoption numbers.
 
+## Snapshot: 2026-07-05 UTC after config PR merge
+
+| Metric | Value | Evidence / notes |
+| --- | ---: | --- |
+| Latest GitHub release | `v0.1.1` | Latest published release; config/baseline/suppression support is unreleased |
+| Merged pull requests | `1` | #9 merged for config, baseline, and suppression support |
+| Open issues | `3` | #2, #5, #7 |
+| Closed issues | `4` | #1, #3, #4, #6 |
+| Latest unreleased changes | config, baseline, and suppression support | Merged through #9 |
+| External adopters | `0` | No known external adopters yet |
+| Owned repo adoption examples | `1` | `jinyounghub/approach-key-privacy` uses the GitHub Action in CI |
+
 ## Snapshot: 2026-07-05 UTC after owned repo dogfooding
 
 | Metric | Value | Evidence / notes |
