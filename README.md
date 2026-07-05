@@ -1,5 +1,10 @@
 # agentic-workflow-guard
 
+[![npm version](https://img.shields.io/npm/v/@jin0/agentic-workflow-guard.svg)](https://www.npmjs.com/package/@jin0/agentic-workflow-guard)
+[![CI](https://github.com/jinyounghub/agentic-workflow-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/jinyounghub/agentic-workflow-guard/actions/workflows/ci.yml)
+[![GitHub release](https://img.shields.io/github/v/release/jinyounghub/agentic-workflow-guard)](https://github.com/jinyounghub/agentic-workflow-guard/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Static analyzer and GitHub Action for detecting Agentic Workflow Injection risks in AI-powered GitHub Actions workflows.
 
 `agentic-workflow-guard` is not an AI PR reviewer, an AGENTS.md linter, an MCP scanner, or a replacement for general GitHub Actions security scanners. It focuses on one boundary: untrusted GitHub event data reaching AI agent prompts, then flowing into write permissions, scripts, release commands, or secrets.
@@ -37,6 +42,8 @@ On Windows PowerShell, use `npm.cmd` if script execution policy blocks `npm.ps1`
 ```bash
 npx @jin0/agentic-workflow-guard scan
 npx @jin0/agentic-workflow-guard scan .github/workflows
+npx agentic-workflow-guard scan .github/workflows
+npx awi-guard scan .github/workflows
 npx @jin0/agentic-workflow-guard scan --format markdown
 npx @jin0/agentic-workflow-guard scan --format json
 npx @jin0/agentic-workflow-guard scan --format sarif --output awi-guard.sarif
@@ -58,7 +65,7 @@ Supported options:
 
 ## GitHub Action usage
 
-After the first release, use the `v0` tag for the GitHub Action.
+Start in non-blocking mode so maintainers can inspect findings without breaking CI.
 
 ```yaml
 name: Agentic Workflow Guard
@@ -70,7 +77,6 @@ on:
 
 permissions:
   contents: read
-  security-events: write
 
 jobs:
   awi-guard:
@@ -80,14 +86,30 @@ jobs:
       - uses: jinyounghub/agentic-workflow-guard@v0
         with:
           paths: .github/workflows
-          fail-on: high
-          format: sarif
-          output: awi-guard.sarif
-      - uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: awi-guard.sarif
+          fail-on: never
+          format: markdown
+          output: awi-guard-report.md
 ```
+
+See [docs/adoption.md](docs/adoption.md) for rollout guidance. SARIF upload examples are available in [examples/sarif-upload.yml](examples/sarif-upload.yml).
+
+## Current maturity
+
+This is an early `v0.x` project. The scanner is useful for finding high-risk AI-agent workflow patterns, but false positives are expected while config, baselines, suppressions, and deeper GitHub expression parsing are still on the roadmap.
+
+Use it first as an advisory CI check with `fail-on: never`, then raise the fail threshold after reviewing findings.
+
+## Package smoke test
+
+The published npm package is smoke-tested with a clean install and both CLI aliases:
+
+```bash
+npm install --save-dev @jin0/agentic-workflow-guard
+npx agentic-workflow-guard --help
+npx awi-guard --help
+```
+
+See [docs/npm-smoke-test.md](docs/npm-smoke-test.md) for the latest recorded smoke-test snapshot.
 
 ## Rules
 
@@ -138,9 +160,13 @@ For v0.1.0, suppressions are intentionally not implemented. Prefer narrowing wor
 
 ## Responsible use
 
-Only scan repositories you own or are authorized to assess. Do not use this project to mass-report public repository issues or generate exploit payloads. The test suite uses synthetic vulnerable workflows only.
+Only scan repositories you own or are authorized to assess. Do not use this project to mass-report public repository issues, publish uncoordinated vulnerability claims, or generate exploit payloads. The test suite uses synthetic vulnerable workflows only.
 
 See [docs/responsible-disclosure.md](docs/responsible-disclosure.md) and [SECURITY.md](SECURITY.md).
+
+## Metrics
+
+Project health and adoption signals are tracked in [docs/metrics.md](docs/metrics.md). Metrics are intentionally conservative and should not list adopters or usage that cannot be verified.
 
 ## Development
 
@@ -149,6 +175,8 @@ npm install
 npm run lint
 npm test
 npm run build
+npm pack --dry-run
+node dist/cli.js scan .github/workflows --format markdown --fail-on never
 node dist/cli.js scan tests/fixtures --format markdown --fail-on never
 ```
 

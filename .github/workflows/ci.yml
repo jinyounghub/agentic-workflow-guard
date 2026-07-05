@@ -21,3 +21,37 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+      - name: Pack package
+        id: pack
+        run: |
+          npm pack --json > pack.json
+          node -e 'const fs = require("node:fs"); const p = JSON.parse(fs.readFileSync("pack.json", "utf8"))[0].filename; fs.appendFileSync(process.env.GITHUB_OUTPUT, `tarball=${p}\n`);'
+      - name: Smoke test packed CLI
+        run: |
+          test -f "${{ steps.pack.outputs.tarball }}"
+          test -f dist/action/index.js
+          tmpdir="$(mktemp -d)"
+          cp "${{ steps.pack.outputs.tarball }}" "$tmpdir/package.tgz"
+          pushd "$tmpdir"
+          npm init -y
+          npm install ./package.tgz
+          npx agentic-workflow-guard --help
+          npx awi-guard --help
+          npx agentic-workflow-guard scan --help
+          popd
+          rm -rf "$tmpdir"
+      - name: Self-scan workflows as Markdown
+        run: |
+          mkdir -p reports
+          node dist/cli.js scan .github/workflows --format markdown --output reports/awi-guard-report.md --fail-on never
+      - name: Self-scan workflows as SARIF
+        run: |
+          mkdir -p reports
+          node dist/cli.js scan .github/workflows --format sarif --output reports/awi-guard.sarif --fail-on never
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: awi-guard-self-scan
+          path: |
+            reports/awi-guard-report.md
+            reports/awi-guard.sarif

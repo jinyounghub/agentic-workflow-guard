@@ -1,42 +1,44 @@
 # Project Metrics
 
-This file records only real, dated public metrics for `agentic-workflow-guard`. Do not inflate, estimate, or backfill adoption numbers.
+This page tracks real, dated public project health and adoption signals. Do not inflate, estimate, or backfill adoption numbers.
 
 ## Snapshot: 2026-07-04 UTC
 
 | Metric | Value | Evidence / notes |
 | --- | ---: | --- |
-| Repository | `jinyounghub/agentic-workflow-guard` | Public GitHub repository |
-| GitHub release | `v0.1.0` | Initial public release |
-| npm package name | `@jin0/agentic-workflow-guard` | Declared in `package.json`; release notes say it was published to npm |
-| Stars | 0 | Initial public snapshot |
-| Forks | 0 | Initial public snapshot |
-| Open issues | 8 | Created as real v0.2/project-readiness work items after v0.1.0 |
-| Pull requests | 0 | Initial public snapshot |
-| External adopters | 0 | No external adoption evidence yet |
-| Real owned-repo adopters | 0 | Add only after a public workflow is merged and visible |
-| npm downloads | Unknown | Verify with npm registry/package page before making public claims |
-| CI | Configured | CI runs install, lint, tests, and build |
+| GitHub repository | `jinyounghub/agentic-workflow-guard` | Public repository |
+| Default branch | `main` | GitHub repository metadata |
+| Latest GitHub release | `v0.1.0` | Published 2026-07-04 UTC |
+| npm package | `@jin0/agentic-workflow-guard` | Published package |
+| npm version | `0.1.0` | `npm view @jin0/agentic-workflow-guard version` |
+| npm dist tag | `latest: 0.1.0` | `npm view @jin0/agentic-workflow-guard dist-tags` |
+| npm last-week downloads | `54` | npm downloads API for 2026-06-28 to 2026-07-04 |
+| npm clean install smoke test | Pass | See `docs/npm-smoke-test.md` |
+| `npx` smoke test | Pass | `agentic-workflow-guard`, `awi-guard`, scoped package invocation |
+| CI | Configured | lint, tests, build, package smoke test, self-scan artifacts |
+| GitHub stars | `0` | GitHub repository metadata |
+| GitHub forks | `0` | GitHub repository metadata |
+| Open issues | `7` | Public follow-up issues visible after v0.1.0 |
+| Pull requests | `0` | GitHub repository metadata |
+| External adopters | `0` | No known external adopters yet |
+| Owned repo adoption examples | `0` | Planned next step |
 
-## Public maturity interpretation
+## Public Maturity Interpretation
 
-The project has the minimum public OSS foundation: repository, license, security policy, CI, release, npm package metadata, documentation, and real follow-up issues. It is still an early v0.x project and should not be described as broadly adopted until public adoption evidence exists.
+The project has the minimum public OSS foundation: repository, license, security policy, CI, release, npm package metadata, documentation, and real follow-up issues. It is still an early `v0.x` project and should not be described as broadly adopted until public adoption evidence exists.
 
 Before broader promotion, collect at least:
 
 - One real repository using the GitHub Action.
-- One or more improvement PRs merged after v0.1.0.
+- One or more improvement PRs merged after `v0.1.0`.
 - Verified npm package page and install test from a clean environment.
 - A dated download/adoption snapshot.
 - At least one public explanation post or external reference that describes the tool and responsible-use limits.
 
-## Update procedure
+## Update Rules
 
-When updating this file:
-
-1. Add a new dated snapshot instead of overwriting old metrics.
-2. Use exact public numbers only.
-3. Record source links or command outputs in notes where possible.
-4. Do not count private/internal usage as public adoption unless it is publicly visible and safe to disclose.
-5. Do not use fake stars, forks, downloads, or testimonial accounts.
-6. Keep private grant, sponsorship, or benefit-application notes outside this public repository.
+- Add new dated snapshots instead of editing historical numbers.
+- Use exact public numbers only.
+- Keep external adopters at `0` until there is public evidence.
+- Keep download counts tied to an npm API date range.
+- Track owned-repo dogfooding separately from external adoption.
