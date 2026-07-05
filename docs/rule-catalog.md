@@ -7,6 +7,7 @@ Records AI-related actions for inventory and correlation.
 - Severity: low
 - Confidence: high for catalog matches, low for pattern matches
 - Tags: `ai-action`, `inventory`
+- Evidence includes source, confidence, and either catalog verification metadata or the matched low-confidence pattern term.
 
 ## R101: Untrusted GitHub context reaches AI prompt
 

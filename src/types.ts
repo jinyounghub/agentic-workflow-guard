@@ -2,6 +2,7 @@ export type Severity = "low" | "medium" | "high" | "critical";
 export type Confidence = "low" | "medium" | "high";
 export type ReportFormat = "markdown" | "json" | "sarif";
 export type FailThreshold = Severity | "never";
+export type AiActionKind = "coding-agent" | "ai-inference" | "assistant" | "unknown";
 
 export interface RuleResult {
   id: string;
@@ -64,6 +65,7 @@ export interface AiActionMatch {
   ref?: string;
   confidence: Confidence;
   source: "catalog" | "pattern";
+  matchedPattern?: string;
   catalogEntry?: AiActionCatalogEntry;
 }
 
@@ -76,10 +78,18 @@ export interface AiStep {
 export interface AiActionCatalogEntry {
   owner: string;
   repo: string;
+  kind: AiActionKind;
   knownInputsPromptBoundary: string[];
   knownOutputsAgentDerived: string[];
+  knownAuthInputs: string[];
+  knownSecretEnv: string[];
   defaultCapabilities: string[];
   docsUrl: string;
+  sourceUrl: string;
+  marketplaceUrl?: string;
+  actionYmlUrl: string;
+  lastVerified: string;
+  verificationNotes: string;
   notes: string;
 }
 
