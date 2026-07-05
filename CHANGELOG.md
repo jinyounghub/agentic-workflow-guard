@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+- Update first-party GitHub Actions in CI and examples to current Node 24 runtime lines.
 - Add v0.2 adoption examples for advisory, config/baseline, and blocking rollout modes.
 
 ## 0.2.0 - 2026-07-05

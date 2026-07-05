@@ -12,14 +12,14 @@ jobs:
   awi-guard:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: jinyounghub/agentic-workflow-guard@v0
         with:
           paths: .github/workflows
           fail-on: never
           format: markdown
           output: awi-guard-report.md
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: awi-guard-report
