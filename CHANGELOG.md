@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+- Add config file support for rule disabling, severity overrides, path excludes, and narrow suppressions.
+- Add baseline support for accepted existing findings.
+- Add finding fingerprints and active/suppressed/baselined report state.
+
 ## 0.1.1 - 2026-07-05
 
 - Add public package smoke-test evidence, self-scan CI artifacts, and project health metrics.

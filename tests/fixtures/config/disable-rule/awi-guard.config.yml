@@ -1,0 +1,3 @@
+rules:
+  R107:
+    enabled: false

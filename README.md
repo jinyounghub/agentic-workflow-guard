@@ -47,6 +47,9 @@ npx awi-guard scan .github/workflows
 npx @jin0/agentic-workflow-guard scan --format markdown
 npx @jin0/agentic-workflow-guard scan --format json
 npx @jin0/agentic-workflow-guard scan --format sarif --output awi-guard.sarif
+npx @jin0/agentic-workflow-guard scan --config awi-guard.config.yml
+npx @jin0/agentic-workflow-guard scan --baseline awi-guard.baseline.json
+npx @jin0/agentic-workflow-guard scan --write-baseline awi-guard.baseline.json
 npx @jin0/agentic-workflow-guard scan --fail-on high
 ```
 
@@ -58,8 +61,9 @@ Supported options:
 | `--format` | `markdown`, `json`, `sarif` | `markdown` |
 | `--output` | file path | stdout |
 | `--fail-on` | `low`, `medium`, `high`, `critical`, `never` | `high` |
-| `--config` | reserved | none |
-| `--baseline` | reserved | none |
+| `--config` | config file path | none |
+| `--baseline` | baseline JSON path | none |
+| `--write-baseline` | baseline JSON path | none |
 | `--no-color` | reserved | false |
 | `--verbose` | true or false | false |
 
@@ -98,6 +102,15 @@ See [docs/adoption.md](docs/adoption.md) for rollout guidance. SARIF upload exam
 This is an early `v0.x` project. The scanner is useful for finding high-risk AI-agent workflow patterns, but false positives are expected while config, baselines, suppressions, and deeper GitHub expression parsing are still on the roadmap.
 
 Use it first as an advisory CI check with `fail-on: never`, then raise the fail threshold after reviewing findings.
+
+## Managing Noise
+
+For real repositories, start with non-blocking mode and then use config files, baselines, and narrow suppressions to manage accepted findings.
+
+See:
+
+- [docs/configuration.md](docs/configuration.md)
+- [docs/baselines-and-suppressions.md](docs/baselines-and-suppressions.md)
 
 ## Package smoke test
 
@@ -149,7 +162,7 @@ This project is conservative by design. Common false positive areas:
 - A provider API key is necessary for the AI action and is isolated from other secrets.
 - A version tag is protected by repository policy even though it is not a full SHA.
 
-For v0.1.0, suppressions are intentionally not implemented. Prefer narrowing workflow permissions and splitting untrusted analysis from privileged writes. Baseline and inline suppression support are planned.
+Prefer narrowing workflow permissions and splitting untrusted analysis from privileged writes. Use baselines for existing findings that still need review, and use suppressions only for narrow accepted findings with a clear reason.
 
 ## How this differs from nearby tools
 

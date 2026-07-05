@@ -70,3 +70,9 @@ Flags `secrets.*` values in AI action `env`. Provider-only API keys are medium. 
 
 - Severity: medium, high, or critical
 - Tags: `secrets`, `ai-action`, `exfiltration`
+
+## Rule Configuration
+
+Rules can be disabled or assigned an effective severity in `awi-guard.config.yml`. The original rule severity remains in JSON and SARIF output, while `effectiveSeverity` is used for summaries and `fail-on` decisions.
+
+Use rule overrides sparingly. Prefer fixing high-risk workflow patterns when possible.

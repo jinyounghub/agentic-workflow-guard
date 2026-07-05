@@ -3,14 +3,26 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { renderJsonReport } from "./json-report.js";
 import { renderMarkdownReport } from "./markdown-report.js";
+import { writeBaselineFile } from "./noise-control.js";
 import { renderSarifReport } from "./sarif.js";
 import { scan, shouldFail } from "./scanner.js";
 const validFormats = new Set(["markdown", "json", "sarif"]);
 const validThresholds = new Set(["low", "medium", "high", "critical", "never"]);
 async function main() {
     const options = parseArgs(process.argv.slice(2));
-    const result = await scan({ paths: options.paths, failOn: options.failOn });
+    const result = await scan({
+        paths: options.paths,
+        failOn: options.failOn,
+        configPath: options.configPath,
+        baselinePath: options.baselinePath,
+    });
     const report = renderReport(options.format, result);
+    if (options.writeBaselinePath) {
+        await writeBaselineFile(options.writeBaselinePath, result, process.cwd());
+        if (options.verbose) {
+            console.error(`Wrote baseline to ${path.resolve(process.cwd(), options.writeBaselinePath)}`);
+        }
+    }
     if (options.output) {
         const output = path.resolve(process.cwd(), options.output);
         await mkdir(path.dirname(output), { recursive: true });
@@ -45,6 +57,7 @@ function parseArgs(args) {
         paths: [],
         format: "markdown",
         failOn: "high",
+        failOnProvided: false,
         verbose: false,
     };
     while (queue.length > 0) {
@@ -71,9 +84,16 @@ function parseArgs(args) {
                 usage(`Invalid --fail-on value: ${value}`);
             }
             options.failOn = value;
+            options.failOnProvided = true;
         }
-        else if (arg === "--config" || arg === "--baseline") {
-            requireValue(arg, queue);
+        else if (arg === "--config") {
+            options.configPath = requireValue(arg, queue);
+        }
+        else if (arg === "--baseline") {
+            options.baselinePath = requireValue(arg, queue);
+        }
+        else if (arg === "--write-baseline") {
+            options.writeBaselinePath = requireValue(arg, queue);
         }
         else if (arg === "--no-color") {
             // Reports are plain text today; this option is reserved for CLI compatibility.
@@ -94,6 +114,9 @@ function parseArgs(args) {
     if (options.paths.length === 0) {
         options.paths = [".github/workflows"];
     }
+    if (options.writeBaselinePath && !options.failOnProvided) {
+        options.failOn = "never";
+    }
     return options;
 }
 function requireValue(option, queue) {
@@ -109,11 +132,13 @@ function usage(error) {
         console.error("");
     }
     console.error(`Usage:
-  agentic-workflow-guard scan [path] [--format markdown|json|sarif] [--output file] [--fail-on low|medium|high|critical|never]
+  agentic-workflow-guard scan [path] [--config file] [--baseline file] [--format markdown|json|sarif] [--output file] [--fail-on low|medium|high|critical|never]
 
 Examples:
   agentic-workflow-guard scan
   agentic-workflow-guard scan .github/workflows --format markdown
+  agentic-workflow-guard scan --config awi-guard.config.yml --baseline awi-guard.baseline.json
+  agentic-workflow-guard scan --write-baseline awi-guard.baseline.json
   agentic-workflow-guard scan --format sarif --output awi-guard.sarif --fail-on high`);
     process.exit(error ? 2 : 0);
 }
