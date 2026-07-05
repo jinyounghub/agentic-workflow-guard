@@ -17,7 +17,13 @@ Use this checklist for patch and minor releases.
 ```bash
 node dist/cli.js scan .github/workflows --format markdown --fail-on never
 node dist/cli.js scan tests/fixtures --format markdown --fail-on never
+node dist/cli.js scan tests/fixtures/dataflow --format json --fail-on never
+node dist/cli.js scan tests/fixtures/dataflow --format sarif --output awi-dataflow.sarif --fail-on never
+node -e "JSON.parse(require('node:fs').readFileSync('awi-dataflow.sarif','utf8')); console.log('sarif ok')"
 ```
+
+On Windows PowerShell, write temporary SARIF files under `$env:TEMP` or the
+workspace and use `npm.cmd` if execution policy blocks `npm.ps1`.
 
 ## Versioning
 
@@ -37,8 +43,11 @@ Then verify:
 
 ```bash
 npm view @jin0/agentic-workflow-guard version
-npm install --save-dev @jin0/agentic-workflow-guard
+npm view @jin0/agentic-workflow-guard dist-tags
+npm install --save-dev @jin0/agentic-workflow-guard@<version>
 npx agentic-workflow-guard --help
+npx awi-guard --help
+npx agentic-workflow-guard scan --help
 ```
 
 ## GitHub
@@ -47,6 +56,7 @@ npx agentic-workflow-guard --help
 - Publish GitHub release notes.
 - Upload the npm tarball only when useful for traceability.
 - Move the `v0` action tag to the latest compatible v0.x release.
+- Confirm owned-repository dogfooding after moving `v0`.
 
 ## After Release
 
