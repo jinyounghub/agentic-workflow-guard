@@ -1,0 +1,13 @@
+rules:
+  R107:
+    severity: medium
+
+exclude:
+  paths:
+    - ".github/workflows/generated/**"
+
+suppressions:
+  - id: R104
+    file: ".github/workflows/ai-review.yml"
+    reason: "AI output is rendered as report text and is not executed."
+    expires: "2026-12-31"

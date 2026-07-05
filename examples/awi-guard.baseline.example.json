@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "findings": [
+    {
+      "id": "R107",
+      "file": ".github/workflows/ai-review.yml",
+      "fingerprint": "0123456789abcdef01234567"
+    }
+  ]
+}

@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+- Add v0.2 adoption examples for advisory, config/baseline, and blocking rollout modes.
+
 ## 0.2.0 - 2026-07-05
 
 - Add config file support for rule disabling, severity overrides, path excludes, and narrow suppressions.
