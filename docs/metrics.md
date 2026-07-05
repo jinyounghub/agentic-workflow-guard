@@ -2,6 +2,19 @@
 
 This page tracks real, dated public project health and adoption signals. Do not inflate, estimate, or backfill adoption numbers.
 
+## Snapshot: 2026-07-05 UTC after owned repo dogfooding
+
+| Metric | Value | Evidence / notes |
+| --- | ---: | --- |
+| Latest GitHub release | `v0.1.1` | Published 2026-07-05 UTC |
+| npm version | `0.1.1` | `npm view @jin0/agentic-workflow-guard version` |
+| `v0` action tag | `v0.1.1` | `v0` and `v0.1.1` point to commit `c378ec6` |
+| Owned repo adoption examples | `1` | `jinyounghub/approach-key-privacy` uses the GitHub Action in CI |
+| Owned repo dogfooding workflow | Pass | `jinyounghub/approach-key-privacy` [run 28733900609](https://github.com/jinyounghub/approach-key-privacy/actions/runs/28733900609) |
+| External adopters | `0` | No known external adopters yet |
+| Open issues | `4` | #1, #2, #5, #7 |
+| Closed issues | `3` | #3, #4, #6 |
+
 ## Snapshot: 2026-07-05 UTC after v0.1.1
 
 | Metric | Value | Evidence / notes |
