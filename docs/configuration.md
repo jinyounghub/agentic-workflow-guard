@@ -3,7 +3,7 @@
 `agentic-workflow-guard` works without a config file. Add `awi-guard.config.yml` when a repository needs rule overrides, path excludes, or narrow suppressions.
 
 ```bash
-npx agentic-workflow-guard scan --config awi-guard.config.yml
+npx @jin0/agentic-workflow-guard scan --config awi-guard.config.yml
 ```
 
 ## Example

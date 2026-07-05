@@ -4,12 +4,17 @@ Baselines and suppressions are both ways to manage accepted findings, but they s
 
 Use a baseline when a repository has existing findings and you want CI to focus on new findings. Use a suppression when a specific finding has been reviewed and accepted for a documented reason.
 
+See [config and baseline workflow example](../examples/config-and-baseline.yml),
+[example config](../examples/awi-guard.config.example.yml), and
+[example baseline](../examples/awi-guard.baseline.example.json) for a practical
+GitHub Actions setup.
+
 ## Baselines
 
 Create a baseline from the current scan:
 
 ```bash
-npx agentic-workflow-guard scan --write-baseline awi-guard.baseline.json
+npx @jin0/agentic-workflow-guard scan --write-baseline awi-guard.baseline.json
 ```
 
 When `--write-baseline` is used without an explicit `--fail-on`, the scan exits successfully after writing the baseline.
@@ -17,7 +22,7 @@ When `--write-baseline` is used without an explicit `--fail-on`, the scan exits 
 Use it in later scans:
 
 ```bash
-npx agentic-workflow-guard scan --baseline awi-guard.baseline.json
+npx @jin0/agentic-workflow-guard scan --baseline awi-guard.baseline.json
 ```
 
 Baseline files use stable fingerprints:

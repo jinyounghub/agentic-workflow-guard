@@ -40,6 +40,17 @@ jobs:
 
 See [configuration](configuration.md) and [baselines and suppressions](baselines-and-suppressions.md).
 
+## Ready-to-copy Examples
+
+Use the examples that match your rollout stage:
+
+- [Advisory mode](../examples/advisory.yml): start here to collect findings without failing CI.
+- [Config and baseline mode](../examples/config-and-baseline.yml): use this when known findings need planned cleanup.
+- [Blocking mode](../examples/fail-on-high.yml): use this when the workflow is quiet enough to fail on high and critical findings.
+- [SARIF upload](../examples/sarif-upload.yml): use this when you want code scanning alerts.
+
+Example config and baseline files are available in [examples](../examples).
+
 ## Responsible Use
 
 Only scan repositories you own or are authorized to assess. Do not mass-report findings to public projects. Use synthetic examples for demos and issue reports.

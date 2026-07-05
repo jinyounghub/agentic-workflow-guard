@@ -1,4 +1,4 @@
-name: Agentic Workflow Guard blocking
+name: Agentic Workflow Guard advisory
 
 on:
   pull_request:
@@ -16,6 +16,11 @@ jobs:
       - uses: jinyounghub/agentic-workflow-guard@v0
         with:
           paths: .github/workflows
-          fail-on: high
+          fail-on: never
           format: markdown
           output: awi-guard-report.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: awi-guard-report
+          path: awi-guard-report.md

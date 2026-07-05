@@ -95,7 +95,9 @@ jobs:
           output: awi-guard-report.md
 ```
 
-See [docs/adoption.md](docs/adoption.md) for rollout guidance. SARIF upload examples are available in [examples/sarif-upload.yml](examples/sarif-upload.yml).
+See [docs/adoption.md](docs/adoption.md) for rollout guidance. Ready-to-copy
+workflow examples are available in [examples](examples), including advisory,
+config/baseline, blocking, and SARIF upload modes.
 
 ## Current maturity
 
@@ -111,6 +113,7 @@ See:
 
 - [docs/configuration.md](docs/configuration.md)
 - [docs/baselines-and-suppressions.md](docs/baselines-and-suppressions.md)
+- [examples](examples)
 
 ## Package smoke test
 
