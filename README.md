@@ -99,7 +99,7 @@ See [docs/adoption.md](docs/adoption.md) for rollout guidance. SARIF upload exam
 
 ## Current maturity
 
-This is an early `v0.x` project. The current published release is `v0.1.1`; config files, baselines, and narrow suppressions are available on `main` and planned for the next minor release. False positives are still expected while deeper GitHub expression parsing and data-flow precision continue to improve.
+This is an early `v0.x` project. The `v0.2.0` release adds config files, baselines, narrow suppressions, better AI-output data-flow precision, verified AI action catalog metadata, and contributor onboarding fixtures. False positives are still expected while deeper workflow analysis continues to improve.
 
 Use it first as an advisory CI check with `fail-on: never`, then raise the fail threshold after reviewing findings.
 

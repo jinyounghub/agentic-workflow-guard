@@ -14,15 +14,16 @@
 
 ## v0.2.0
 
-- Config files, baselines, and config suppressions available on `main`
+- Config files, baselines, and config suppressions
 - More precise GitHub expression parsing and AI-output data-flow tracking
-- Better action metadata ingestion for known AI actions
-- Rule documentation links in SARIF help
-- More safe patterns for data-only AI output handling
-- Inline suppression comments for narrow, reviewed exceptions
+- Verified metadata for known AI actions
+- Contributor onboarding docs and beginner-friendly synthetic fixtures
 
 ## v0.3.0
 
+- Rule documentation links in SARIF help
+- More safe patterns for data-only AI output handling
+- Inline suppression comments for narrow, reviewed exceptions
 - Optional LLM-assisted explanation mode
 - Safer workflow rewrite suggestions
 - Expanded catalog for emerging AI agent actions
