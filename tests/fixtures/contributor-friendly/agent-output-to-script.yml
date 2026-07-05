@@ -1,0 +1,18 @@
+name: Contributor Friendly AI Output To Script
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  command:
+    runs-on: ubuntu-latest
+    steps:
+      - id: ai
+        uses: actions/ai-inference@v1
+        with:
+          prompt: Return a synthetic shell command for a demo.
+      - name: Execute agent output
+        run: bash -c "${{ steps.ai.outputs.response }}"

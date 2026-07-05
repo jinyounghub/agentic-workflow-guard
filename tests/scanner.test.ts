@@ -110,6 +110,29 @@ describe("agentic-workflow-guard scanner", () => {
     expect(multiple?.evidence).not.toContain("source: github.sha");
   });
 
+  it("keeps contributor-friendly fixtures tied to their teaching rule", async () => {
+    const result = await scan({ paths: [path.join(fixtures, "contributor-friendly")] });
+    const byFile = (filePart: string, id: string) =>
+      result.results.find(
+        (finding) => finding.id === id && finding.file.replace(/\\/g, "/").includes(filePart),
+      );
+
+    expect(byFile("read-only-ai-summary.yml", "R001")).toBeTruthy();
+    expect(byFile("read-only-ai-summary.yml", "R101")).toBeUndefined();
+
+    const untrustedPrompt = byFile("untrusted-issue-prompt.yml", "R101");
+    expect(untrustedPrompt?.severity).toBe("high");
+    expect(untrustedPrompt?.evidence.join(" ")).toContain("github.event.issue.body");
+
+    const outputToScript = byFile("agent-output-to-script.yml", "R104");
+    expect(outputToScript?.severity).toBe("critical");
+    expect(outputToScript?.evidence).toContain("source: steps.ai.outputs.response");
+
+    const sensitiveSink = byFile("agent-output-to-script.yml", "R105");
+    expect(sensitiveSink?.severity).toBe("critical");
+    expect(sensitiveSink?.evidence.join(" ")).toContain("bash -c");
+  });
+
   it("applies rule disable config without changing default behavior", async () => {
     const fixture = path.join(fixtures, "config", "disable-rule");
 
