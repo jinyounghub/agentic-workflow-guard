@@ -144,7 +144,9 @@ Severity is intentionally conservative. High and critical findings represent pat
 
 ## Current AI action catalog
 
-The initial catalog includes verified public action names:
+The current high-confidence catalog is verified from public official action metadata.
+See [docs/ai-action-catalog.md](docs/ai-action-catalog.md) for prompt-boundary
+inputs, documented outputs, auth-related inputs, and source links.
 
 - `openai/codex-action`
 - `anthropics/claude-code-action`

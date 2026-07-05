@@ -1,4 +1,4 @@
-import type { Rule } from "../types.js";
+import type { AiActionMatch, Rule, WorkflowStep } from "../types.js";
 import { result } from "./shared.js";
 
 export const aiActionDetectedRule: Rule = ({ workflow }) =>
@@ -12,13 +12,44 @@ export const aiActionDetectedRule: Rule = ({ workflow }) =>
       line: step.line,
       column: step.column,
       message: `AI-related action ${action.owner}/${action.repo} is used in job ${job.id}.`,
-      evidence: [
-        `uses: ${step.uses ?? `${action.owner}/${action.repo}`}`,
-        `source: ${action.source}`,
-      ],
+      evidence: aiActionEvidence(step, action),
       recommendation:
         "Review the AI step prompt boundary, token permissions, secrets, and any downstream script usage.",
-      references: [action.catalogEntry?.docsUrl ?? "https://docs.github.com/en/actions"],
+      references: aiActionReferences(action),
       tags: ["ai-action", "inventory"],
     }),
   );
+
+function aiActionEvidence(step: WorkflowStep, action: AiActionMatch): string[] {
+  const evidence = [
+    `uses: ${step.uses ?? `${action.owner}/${action.repo}`}`,
+    `source: ${action.source}`,
+    `confidence: ${action.confidence}`,
+  ];
+
+  if (action.catalogEntry) {
+    evidence.push(
+      `kind: ${action.catalogEntry.kind}`,
+      `lastVerified: ${action.catalogEntry.lastVerified}`,
+      `docs: ${action.catalogEntry.docsUrl}`,
+    );
+  }
+
+  if (action.matchedPattern) {
+    evidence.push(`matchedPattern: ${action.matchedPattern}`);
+  }
+
+  return evidence;
+}
+
+function aiActionReferences(action: AiActionMatch): string[] {
+  if (!action.catalogEntry) {
+    return ["https://docs.github.com/en/actions"];
+  }
+
+  return [
+    action.catalogEntry.docsUrl,
+    action.catalogEntry.sourceUrl,
+    action.catalogEntry.actionYmlUrl,
+  ].filter((url, index, urls) => urls.indexOf(url) === index);
+}
