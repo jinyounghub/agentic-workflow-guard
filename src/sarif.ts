@@ -32,7 +32,7 @@ function toSarif(result: ScanResult, cwd: string) {
                 markdown: finding.recommendation,
               },
               defaultConfiguration: {
-                level: sarifLevel(finding.severity),
+                level: sarifLevel(finding.effectiveSeverity ?? finding.severity),
               },
               properties: {
                 tags: finding.tags,
@@ -43,7 +43,7 @@ function toSarif(result: ScanResult, cwd: string) {
         },
         results: result.results.map((finding) => ({
           ruleId: finding.id,
-          level: sarifLevel(finding.severity),
+          level: sarifLevel(finding.effectiveSeverity ?? finding.severity),
           message: {
             text: `${finding.title}: ${finding.message}`,
           },
@@ -60,18 +60,45 @@ function toSarif(result: ScanResult, cwd: string) {
               },
             },
           ],
+          suppressions: sarifSuppressions(finding),
           properties: {
             severity: finding.severity,
+            effectiveSeverity: finding.effectiveSeverity ?? finding.severity,
             confidence: finding.confidence,
             evidence: finding.evidence,
             recommendation: finding.recommendation,
             references: finding.references,
             tags: finding.tags,
+            fingerprint: finding.fingerprint,
+            suppressed: Boolean(finding.suppressed),
+            suppressionReason: finding.suppressionReason,
+            suppressionSource: finding.suppressionSource,
+            baselined: Boolean(finding.baselined),
           },
         })),
       },
     ],
   };
+}
+
+function sarifSuppressions(finding: RuleResult) {
+  if (finding.suppressed) {
+    return [
+      {
+        kind: "external",
+        justification: finding.suppressionReason ?? "Suppressed by configuration.",
+      },
+    ];
+  }
+  if (finding.baselined) {
+    return [
+      {
+        kind: "external",
+        justification: "Accepted by baseline.",
+      },
+    ];
+  }
+  return undefined;
 }
 
 function uniqueRules(results: RuleResult[]): RuleResult[] {

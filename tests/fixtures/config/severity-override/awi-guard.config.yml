@@ -1,0 +1,3 @@
+rules:
+  R108:
+    severity: high

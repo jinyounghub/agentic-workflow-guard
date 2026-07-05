@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "findings": [
+    {
+      "id": "R001",
+      "file": "tests/fixtures/baseline/workflow.yml",
+      "fingerprint": "5f7c6f92afc1d49a4dab135c"
+    },
+    {
+      "id": "R107",
+      "file": "tests/fixtures/baseline/workflow.yml",
+      "fingerprint": "7b63b4c076fa2bed33be8a27"
+    }
+  ]
+}

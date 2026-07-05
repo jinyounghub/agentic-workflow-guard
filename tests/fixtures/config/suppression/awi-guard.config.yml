@@ -1,0 +1,5 @@
+suppressions:
+  - id: R104
+    file: workflow.yml
+    reason: AI output is only printed as data and not executed.
+    expires: "2026-12-31"

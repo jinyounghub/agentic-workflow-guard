@@ -1,0 +1,5 @@
+suppressions:
+  - id: R104
+    file: workflow.yml
+    reason: This accepted finding should expire.
+    expires: "2020-01-01"

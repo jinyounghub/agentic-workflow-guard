@@ -5,6 +5,12 @@ export function renderMarkdownReport(result, cwd = process.cwd()) {
         "",
         `Scanned ${result.summary.filesScanned} workflow file(s). Found ${result.summary.findings} finding(s).`,
         "",
+        "## Summary",
+        "",
+        `- Active findings: ${result.summary.activeFindings}`,
+        `- Suppressed findings: ${result.summary.suppressedFindings}`,
+        `- Baselined findings: ${result.summary.baselinedFindings}`,
+        "",
         "| Severity | Count |",
         "| --- | ---: |",
         `| Critical | ${result.summary.bySeverity.critical} |`,
@@ -17,10 +23,10 @@ export function renderMarkdownReport(result, cwd = process.cwd()) {
         lines.push("No Agentic Workflow Injection findings were detected.", "");
         return `${lines.join("\n")}\n`;
     }
-    lines.push("| Rule | Severity | Location | Finding |");
-    lines.push("| --- | --- | --- | --- |");
+    lines.push("| Rule | Severity | Status | Location | Finding |");
+    lines.push("| --- | --- | --- | --- | --- |");
     for (const finding of result.results) {
-        lines.push(`| ${escapeCell(finding.id)} | ${finding.severity} | ${escapeCell(location(finding, cwd))} | ${escapeCell(`${finding.title}: ${finding.message}`)} |`);
+        lines.push(`| ${escapeCell(finding.id)} | ${displaySeverity(finding)} | ${findingStatus(finding)} | ${escapeCell(location(finding, cwd))} | ${escapeCell(`${finding.title}: ${finding.message}`)} |`);
     }
     lines.push("");
     lines.push("## Details");
@@ -28,9 +34,16 @@ export function renderMarkdownReport(result, cwd = process.cwd()) {
     for (const finding of result.results) {
         lines.push(`### ${finding.id}: ${finding.title}`);
         lines.push("");
-        lines.push(`- Severity: ${finding.severity}`);
+        lines.push(`- Severity: ${displaySeverity(finding)}`);
+        lines.push(`- Status: ${findingStatus(finding)}`);
         lines.push(`- Confidence: ${finding.confidence}`);
         lines.push(`- Location: ${location(finding, cwd)}`);
+        if (finding.fingerprint) {
+            lines.push(`- Fingerprint: \`${finding.fingerprint}\``);
+        }
+        if (finding.suppressionReason) {
+            lines.push(`- Suppression reason: ${finding.suppressionReason}`);
+        }
         lines.push(`- Message: ${finding.message}`);
         lines.push(`- Recommendation: ${finding.recommendation}`);
         if (finding.evidence.length > 0) {
@@ -42,6 +55,21 @@ export function renderMarkdownReport(result, cwd = process.cwd()) {
         lines.push("");
     }
     return `${lines.join("\n")}\n`;
+}
+function displaySeverity(finding) {
+    if (finding.effectiveSeverity && finding.effectiveSeverity !== finding.severity) {
+        return `${finding.effectiveSeverity} (was ${finding.severity})`;
+    }
+    return finding.effectiveSeverity ?? finding.severity;
+}
+function findingStatus(finding) {
+    if (finding.suppressed) {
+        return "suppressed";
+    }
+    if (finding.baselined) {
+        return "baselined";
+    }
+    return "active";
 }
 function location(finding, cwd) {
     const relative = path.relative(cwd, finding.file) || finding.file;

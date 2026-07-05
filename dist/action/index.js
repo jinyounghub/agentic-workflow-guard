@@ -45381,7 +45381,7 @@ var summary_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
 };
 
 
-const { access, appendFile, writeFile } = external_fs_.promises;
+const { access, appendFile, writeFile: summary_writeFile } = external_fs_.promises;
 const SUMMARY_ENV_VAR = 'GITHUB_STEP_SUMMARY';
 const SUMMARY_DOCS_URL = 'https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#adding-a-job-summary';
 class Summary {
@@ -45442,7 +45442,7 @@ class Summary {
         return summary_awaiter(this, void 0, void 0, function* () {
             const overwrite = !!(options === null || options === void 0 ? void 0 : options.overwrite);
             const filePath = yield this.filePath();
-            const writeFunc = overwrite ? writeFile : appendFile;
+            const writeFunc = overwrite ? summary_writeFile : appendFile;
             yield writeFunc(filePath, this._buffer, { encoding: 'utf8' });
             return this.emptyBuffer();
         });
@@ -45704,7 +45704,7 @@ var io_util_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _
 };
 
 
-const { chmod, copyFile, lstat, mkdir, open: io_util_open, readdir, rename, rm, rmdir, stat, symlink, unlink } = external_fs_.promises;
+const { chmod, copyFile, lstat, mkdir: io_util_mkdir, open: io_util_open, readdir, rename, rm, rmdir, stat, symlink, unlink } = external_fs_.promises;
 // export const {open} = 'fs'
 const IS_WINDOWS = process.platform === 'win32';
 /**
@@ -47215,6 +47215,12 @@ function renderMarkdownReport(result, cwd = process.cwd()) {
         "",
         `Scanned ${result.summary.filesScanned} workflow file(s). Found ${result.summary.findings} finding(s).`,
         "",
+        "## Summary",
+        "",
+        `- Active findings: ${result.summary.activeFindings}`,
+        `- Suppressed findings: ${result.summary.suppressedFindings}`,
+        `- Baselined findings: ${result.summary.baselinedFindings}`,
+        "",
         "| Severity | Count |",
         "| --- | ---: |",
         `| Critical | ${result.summary.bySeverity.critical} |`,
@@ -47227,10 +47233,10 @@ function renderMarkdownReport(result, cwd = process.cwd()) {
         lines.push("No Agentic Workflow Injection findings were detected.", "");
         return `${lines.join("\n")}\n`;
     }
-    lines.push("| Rule | Severity | Location | Finding |");
-    lines.push("| --- | --- | --- | --- |");
+    lines.push("| Rule | Severity | Status | Location | Finding |");
+    lines.push("| --- | --- | --- | --- | --- |");
     for (const finding of result.results) {
-        lines.push(`| ${escapeCell(finding.id)} | ${finding.severity} | ${escapeCell(markdown_report_location(finding, cwd))} | ${escapeCell(`${finding.title}: ${finding.message}`)} |`);
+        lines.push(`| ${escapeCell(finding.id)} | ${displaySeverity(finding)} | ${findingStatus(finding)} | ${escapeCell(markdown_report_location(finding, cwd))} | ${escapeCell(`${finding.title}: ${finding.message}`)} |`);
     }
     lines.push("");
     lines.push("## Details");
@@ -47238,9 +47244,16 @@ function renderMarkdownReport(result, cwd = process.cwd()) {
     for (const finding of result.results) {
         lines.push(`### ${finding.id}: ${finding.title}`);
         lines.push("");
-        lines.push(`- Severity: ${finding.severity}`);
+        lines.push(`- Severity: ${displaySeverity(finding)}`);
+        lines.push(`- Status: ${findingStatus(finding)}`);
         lines.push(`- Confidence: ${finding.confidence}`);
         lines.push(`- Location: ${markdown_report_location(finding, cwd)}`);
+        if (finding.fingerprint) {
+            lines.push(`- Fingerprint: \`${finding.fingerprint}\``);
+        }
+        if (finding.suppressionReason) {
+            lines.push(`- Suppression reason: ${finding.suppressionReason}`);
+        }
         lines.push(`- Message: ${finding.message}`);
         lines.push(`- Recommendation: ${finding.recommendation}`);
         if (finding.evidence.length > 0) {
@@ -47252,6 +47265,21 @@ function renderMarkdownReport(result, cwd = process.cwd()) {
         lines.push("");
     }
     return `${lines.join("\n")}\n`;
+}
+function displaySeverity(finding) {
+    if (finding.effectiveSeverity && finding.effectiveSeverity !== finding.severity) {
+        return `${finding.effectiveSeverity} (was ${finding.severity})`;
+    }
+    return finding.effectiveSeverity ?? finding.severity;
+}
+function findingStatus(finding) {
+    if (finding.suppressed) {
+        return "suppressed";
+    }
+    if (finding.baselined) {
+        return "baselined";
+    }
+    return "active";
 }
 function markdown_report_location(finding, cwd) {
     const relative = external_node_path_namespaceObject.relative(cwd, finding.file) || finding.file;
@@ -47292,7 +47320,7 @@ function toSarif(result, cwd) {
                                 markdown: finding.recommendation,
                             },
                             defaultConfiguration: {
-                                level: sarifLevel(finding.severity),
+                                level: sarifLevel(finding.effectiveSeverity ?? finding.severity),
                             },
                             properties: {
                                 tags: finding.tags,
@@ -47303,7 +47331,7 @@ function toSarif(result, cwd) {
                 },
                 results: result.results.map((finding) => ({
                     ruleId: finding.id,
-                    level: sarifLevel(finding.severity),
+                    level: sarifLevel(finding.effectiveSeverity ?? finding.severity),
                     message: {
                         text: `${finding.title}: ${finding.message}`,
                     },
@@ -47320,18 +47348,44 @@ function toSarif(result, cwd) {
                             },
                         },
                     ],
+                    suppressions: sarifSuppressions(finding),
                     properties: {
                         severity: finding.severity,
+                        effectiveSeverity: finding.effectiveSeverity ?? finding.severity,
                         confidence: finding.confidence,
                         evidence: finding.evidence,
                         recommendation: finding.recommendation,
                         references: finding.references,
                         tags: finding.tags,
+                        fingerprint: finding.fingerprint,
+                        suppressed: Boolean(finding.suppressed),
+                        suppressionReason: finding.suppressionReason,
+                        suppressionSource: finding.suppressionSource,
+                        baselined: Boolean(finding.baselined),
                     },
                 })),
             },
         ],
     };
+}
+function sarifSuppressions(finding) {
+    if (finding.suppressed) {
+        return [
+            {
+                kind: "external",
+                justification: finding.suppressionReason ?? "Suppressed by configuration.",
+            },
+        ];
+    }
+    if (finding.baselined) {
+        return [
+            {
+                kind: "external",
+                justification: "Accepted by baseline.",
+            },
+        ];
+    }
+    return undefined;
 }
 function uniqueRules(results) {
     const byId = new Map();
@@ -47354,6 +47408,10 @@ function sarifLevel(severity) {
 //# sourceMappingURL=sarif.js.map
 // EXTERNAL MODULE: ./node_modules/fast-glob/out/index.js
 var out = __nccwpck_require__(5648);
+// EXTERNAL MODULE: external "node:crypto"
+var external_node_crypto_ = __nccwpck_require__(7598);
+// EXTERNAL MODULE: ./node_modules/yaml/dist/index.js
+var dist = __nccwpck_require__(8815);
 ;// CONCATENATED MODULE: ./dist/catalog/ai-actions.js
 const aiActionCatalog = [
     {
@@ -47473,8 +47531,6 @@ function promptBoundaryInputNames(match) {
     ];
 }
 //# sourceMappingURL=ai-actions.js.map
-// EXTERNAL MODULE: ./node_modules/yaml/dist/index.js
-var dist = __nccwpck_require__(8815);
 ;// CONCATENATED MODULE: ./dist/workflow-parser.js
 
 
@@ -47613,6 +47669,317 @@ function valueContainsExpression(value, pattern) {
     return pattern.test(asText ?? "");
 }
 //# sourceMappingURL=workflow-parser.js.map
+;// CONCATENATED MODULE: ./dist/noise-control.js
+
+
+
+
+
+const validSeverities = new Set(["low", "medium", "high", "critical"]);
+async function loadGuardConfig(configPath, cwd) {
+    if (!configPath) {
+        return { config: {}, diagnostics: [] };
+    }
+    const configFile = external_node_path_namespaceObject.resolve(cwd, configPath);
+    await assertReadable(configFile, `Config file not found: ${configPath}`);
+    const raw = await (0,promises_namespaceObject.readFile)(configFile, "utf8");
+    const parsed = (0,dist/* parse */.qg)(raw);
+    const configDir = external_node_path_namespaceObject.dirname(configFile);
+    if (parsed === null || parsed === undefined) {
+        return { config: {}, configFile, diagnostics: [] };
+    }
+    if (!isRecord(parsed)) {
+        throw new Error(`Config file must contain a YAML object: ${configPath}`);
+    }
+    const diagnostics = [];
+    const config = {};
+    const rules = parseRules(parsed.rules, configPath);
+    if (rules) {
+        config.rules = rules;
+    }
+    const exclude = parseExclude(parsed.exclude, configPath, cwd, configDir);
+    if (exclude) {
+        config.exclude = exclude;
+    }
+    const suppressions = parseSuppressions(parsed.suppressions, configFile, cwd, configDir, diagnostics);
+    if (suppressions.length > 0) {
+        config.suppressions = suppressions;
+    }
+    return { config, configFile, diagnostics };
+}
+async function loadBaselineFile(baselinePath, cwd) {
+    if (!baselinePath) {
+        return undefined;
+    }
+    const baselineFile = external_node_path_namespaceObject.resolve(cwd, baselinePath);
+    await assertReadable(baselineFile, `Baseline file not found: ${baselinePath}`);
+    const raw = await (0,promises_namespaceObject.readFile)(baselineFile, "utf8");
+    let parsed;
+    try {
+        parsed = JSON.parse(raw);
+    }
+    catch (error) {
+        throw new Error(`Could not parse baseline JSON ${baselinePath}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+    if (!isRecord(parsed) || parsed.version !== 1 || !Array.isArray(parsed.findings)) {
+        throw new Error(`Baseline file must match schema { version: 1, findings: [...] }: ${baselinePath}`);
+    }
+    const findings = parsed.findings.map((item, index) => {
+        if (!isRecord(item)) {
+            throw new Error(`Baseline finding at index ${index} must be an object`);
+        }
+        if (typeof item.id !== "string" || typeof item.file !== "string") {
+            throw new Error(`Baseline finding at index ${index} must include string id and file`);
+        }
+        if (typeof item.fingerprint !== "string" || item.fingerprint.trim() === "") {
+            throw new Error(`Baseline finding at index ${index} must include a fingerprint`);
+        }
+        return {
+            id: item.id,
+            file: normalizePathForMatch(item.file),
+            fingerprint: item.fingerprint,
+        };
+    });
+    return { version: 1, findings };
+}
+function isExcludedByConfig(file, cwd, config) {
+    return (config.exclude?.paths ?? []).some((pattern) => pathMatches(pattern, file, cwd));
+}
+function applyResultControls(input) {
+    const baselineKeys = new Set((input.baseline?.findings ?? []).map((finding) => `${finding.id}\0${normalizePathForMatch(finding.file)}\0${finding.fingerprint}`));
+    const results = [...(input.diagnostics ?? []), ...input.results];
+    const controlled = [];
+    for (const finding of results) {
+        const ruleConfig = input.config.rules?.[finding.id];
+        if (ruleConfig?.enabled === false) {
+            continue;
+        }
+        const effectiveSeverity = ruleConfig?.severity ?? finding.effectiveSeverity ?? finding.severity;
+        const fingerprint = finding.fingerprint ?? fingerprintFinding(finding, input.cwd);
+        const next = {
+            ...finding,
+            effectiveSeverity,
+            fingerprint,
+        };
+        const suppression = matchingSuppression(next, input.cwd, input.config.suppressions ?? []);
+        if (suppression) {
+            next.suppressed = true;
+            next.suppressionReason = suppression.reason;
+            next.suppressionSource = "config";
+        }
+        const relativeFile = relativePath(next.file, input.cwd);
+        if (baselineKeys.has(`${next.id}\0${relativeFile}\0${fingerprint}`)) {
+            next.baselined = true;
+        }
+        controlled.push(next);
+    }
+    return controlled;
+}
+async function writeBaselineFile(baselinePath, result, cwd) {
+    const output = path.resolve(cwd, baselinePath);
+    const findings = result.results
+        .filter((finding) => !finding.suppressed && finding.id !== "R000")
+        .map((finding) => ({
+        id: finding.id,
+        file: relativePath(finding.file, cwd),
+        fingerprint: finding.fingerprint ?? fingerprintFinding(finding, cwd),
+    }));
+    const unique = new Map();
+    for (const finding of findings) {
+        unique.set(`${finding.id}\0${finding.file}\0${finding.fingerprint}`, finding);
+    }
+    const baseline = {
+        version: 1,
+        findings: [...unique.values()].sort((left, right) => left.file.localeCompare(right.file) ||
+            left.id.localeCompare(right.id) ||
+            left.fingerprint.localeCompare(right.fingerprint)),
+    };
+    await mkdir(path.dirname(output), { recursive: true });
+    await writeFile(output, `${JSON.stringify(baseline, null, 2)}\n`, "utf8");
+}
+function relativePath(file, cwd) {
+    return normalizePathForMatch(external_node_path_namespaceObject.relative(cwd, file) || file);
+}
+function parseRules(value, configPath) {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (!isRecord(value)) {
+        throw new Error(`Config rules must be an object: ${configPath}`);
+    }
+    const rules = {};
+    for (const [id, rawConfig] of Object.entries(value)) {
+        if (!isRecord(rawConfig)) {
+            throw new Error(`Config for rule ${id} must be an object`);
+        }
+        const ruleConfig = {};
+        if (rawConfig.enabled !== undefined) {
+            if (typeof rawConfig.enabled !== "boolean") {
+                throw new Error(`Config for rule ${id} has non-boolean enabled value`);
+            }
+            ruleConfig.enabled = rawConfig.enabled;
+        }
+        if (rawConfig.severity !== undefined) {
+            if (typeof rawConfig.severity !== "string" ||
+                !validSeverities.has(rawConfig.severity)) {
+                throw new Error(`Config for rule ${id} has invalid severity value`);
+            }
+            ruleConfig.severity = rawConfig.severity;
+        }
+        rules[id] = ruleConfig;
+    }
+    return rules;
+}
+function parseExclude(value, configPath, cwd, configDir) {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (!isRecord(value)) {
+        throw new Error(`Config exclude must be an object: ${configPath}`);
+    }
+    if (value.paths === undefined) {
+        return undefined;
+    }
+    if (!Array.isArray(value.paths) || !value.paths.every((item) => typeof item === "string")) {
+        throw new Error(`Config exclude.paths must be a list of strings: ${configPath}`);
+    }
+    return { paths: value.paths.map((item) => normalizeConfigPathPattern(item, cwd, configDir)) };
+}
+function parseSuppressions(value, configFile, cwd, configDir, diagnostics) {
+    if (value === undefined) {
+        return [];
+    }
+    if (!Array.isArray(value)) {
+        throw new Error("Config suppressions must be a list");
+    }
+    const suppressions = [];
+    value.forEach((item, index) => {
+        if (!isRecord(item)) {
+            diagnostics.push(configDiagnostic(configFile, `Suppression at index ${index} must be an object`));
+            return;
+        }
+        const id = typeof item.id === "string" ? item.id.trim() : "";
+        const file = typeof item.file === "string" ? item.file.trim() : "";
+        const reason = typeof item.reason === "string" ? item.reason.trim() : "";
+        const expires = typeof item.expires === "string" ? item.expires.trim() : undefined;
+        if (!id || !file) {
+            diagnostics.push(configDiagnostic(configFile, `Suppression at index ${index} must include id and file`));
+            return;
+        }
+        if (!reason) {
+            diagnostics.push(configDiagnostic(configFile, `Suppression for ${id} in ${file} is ignored because reason is required`));
+            return;
+        }
+        if (expires && !/^\d{4}-\d{2}-\d{2}$/.test(expires)) {
+            diagnostics.push(configDiagnostic(configFile, `Suppression for ${id} in ${file} is ignored because expires must be YYYY-MM-DD`));
+            return;
+        }
+        suppressions.push({
+            id,
+            file: normalizeConfigPathPattern(file, cwd, configDir),
+            reason,
+            expires,
+        });
+    });
+    return suppressions;
+}
+function matchingSuppression(finding, cwd, suppressions) {
+    const file = relativePath(finding.file, cwd);
+    return suppressions.find((suppression) => suppression.id === finding.id &&
+        normalizePathForMatch(suppression.file) === file &&
+        !isExpired(suppression.expires));
+}
+function fingerprintFinding(finding, cwd) {
+    const payload = [
+        finding.id,
+        relativePath(finding.file, cwd),
+        normalizeText(finding.message),
+        normalizeText(finding.evidence.join("|")),
+    ].join("\0");
+    return (0,external_node_crypto_.createHash)("sha256").update(payload).digest("hex").slice(0, 24);
+}
+function pathMatches(pattern, file, cwd) {
+    const candidate = normalizeCase(relativePath(file, cwd));
+    const normalizedPattern = normalizeCase(normalizePathForMatch(pattern));
+    if (!hasGlob(normalizedPattern)) {
+        return (candidate === normalizedPattern ||
+            candidate.startsWith(`${normalizedPattern.replace(/\/$/, "")}/`));
+    }
+    return globToRegExp(normalizedPattern).test(candidate);
+}
+function globToRegExp(pattern) {
+    let source = "^";
+    for (let index = 0; index < pattern.length; index += 1) {
+        const char = pattern[index];
+        const next = pattern[index + 1];
+        if (char === "*" && next === "*") {
+            source += ".*";
+            index += 1;
+        }
+        else if (char === "*") {
+            source += "[^/]*";
+        }
+        else if (char === "?") {
+            source += "[^/]";
+        }
+        else {
+            source += escapeRegExp(char);
+        }
+    }
+    return new RegExp(`${source}$`);
+}
+function hasGlob(pattern) {
+    return /[*?]/.test(pattern);
+}
+function normalizePathForMatch(value) {
+    return value.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/+/g, "/");
+}
+function normalizeConfigPathPattern(value, cwd, configDir) {
+    if (external_node_path_namespaceObject.isAbsolute(value)) {
+        return normalizePathForMatch(external_node_path_namespaceObject.relative(cwd, value));
+    }
+    return normalizePathForMatch(external_node_path_namespaceObject.relative(cwd, external_node_path_namespaceObject.resolve(configDir, value)));
+}
+function normalizeCase(value) {
+    return process.platform === "win32" ? value.toLowerCase() : value;
+}
+function normalizeText(value) {
+    return value.replace(/\s+/g, " ").trim();
+}
+function isExpired(expires) {
+    if (!expires) {
+        return false;
+    }
+    return expires < new Date().toISOString().slice(0, 10);
+}
+function configDiagnostic(file, message) {
+    return {
+        id: "R000",
+        title: "Configuration warning",
+        severity: "medium",
+        confidence: "high",
+        file,
+        line: 1,
+        column: 1,
+        message,
+        evidence: [message],
+        recommendation: "Fix the configuration entry or remove it.",
+        references: [],
+        tags: ["config"],
+    };
+}
+async function assertReadable(file, errorMessage) {
+    try {
+        await (0,promises_namespaceObject.access)(file);
+    }
+    catch {
+        throw new Error(errorMessage);
+    }
+}
+function escapeRegExp(value) {
+    return value.replace(/[\\^$.*+?()[\]{}|]/g, "\\$&");
+}
+//# sourceMappingURL=noise-control.js.map
 ;// CONCATENATED MODULE: ./dist/rules/shared.js
 
 
@@ -47665,7 +48032,7 @@ function aiOutputExpression(step) {
     if (!step.id) {
         return undefined;
     }
-    return new RegExp(String.raw `\$\{\{\s*steps\.${escapeRegExp(step.id)}\.outputs\.[A-Za-z0-9_-]+\s*\}\}`, "g");
+    return new RegExp(String.raw `\$\{\{\s*steps\.${shared_escapeRegExp(step.id)}\.outputs\.[A-Za-z0-9_-]+\s*\}\}`, "g");
 }
 function findAiOutputReferences(command, step) {
     const pattern = aiOutputExpression(step);
@@ -47724,7 +48091,7 @@ function usesRefLooksFloating(uses) {
 function relativeEvidencePath(file) {
     return file.replace(/\\/g, "/");
 }
-function escapeRegExp(value) {
+function shared_escapeRegExp(value) {
     return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 const prHeadContextPattern = /github\.event\.pull_request\.head\.(?:sha|ref|repo\.full_name)|github\.head_ref/i;
@@ -48349,10 +48716,13 @@ function emptySeverityCounts() {
 
 
 
+
 const workflowGlob = ["**/*.yml", "**/*.yaml"];
 async function scan(options = {}) {
     const cwd = options.cwd ?? process.cwd();
-    const files = await collectWorkflowFiles(options.paths ?? [".github/workflows"], cwd);
+    const loadedConfig = await loadGuardConfig(options.configPath, cwd);
+    const baseline = await loadBaselineFile(options.baselinePath, cwd);
+    const files = (await collectWorkflowFiles(options.paths ?? [".github/workflows"], cwd)).filter((file) => !isExcludedByConfig(file, cwd, loadedConfig.config));
     const workflows = [];
     const results = [];
     for (const file of files) {
@@ -48368,14 +48738,23 @@ async function scan(options = {}) {
             results.push(parseErrorResult(file, error));
         }
     }
+    const controlledResults = sortResults(applyResultControls({
+        results,
+        cwd,
+        config: loadedConfig.config,
+        diagnostics: loadedConfig.diagnostics,
+        baseline,
+    }));
     return {
         workflows,
-        results: sortResults(results),
-        summary: summarize(files.length, results),
+        results: controlledResults,
+        summary: summarize(files.length, controlledResults),
     };
 }
 function shouldFail(results, threshold) {
-    return results.some((finding) => isAtLeastSeverity(finding.severity, threshold));
+    return results.some((finding) => !finding.suppressed &&
+        !finding.baselined &&
+        isAtLeastSeverity(finding.effectiveSeverity ?? finding.severity, threshold));
 }
 async function collectWorkflowFiles(inputs, cwd) {
     const files = new Set();
@@ -48439,12 +48818,27 @@ function parseErrorResult(file, error) {
 }
 function summarize(filesScanned, results) {
     const bySeverity = emptySeverityCounts();
+    let activeFindings = 0;
+    let suppressedFindings = 0;
+    let baselinedFindings = 0;
     for (const result of results) {
-        bySeverity[result.severity] += 1;
+        if (result.suppressed) {
+            suppressedFindings += 1;
+            continue;
+        }
+        if (result.baselined) {
+            baselinedFindings += 1;
+            continue;
+        }
+        activeFindings += 1;
+        bySeverity[result.effectiveSeverity ?? result.severity] += 1;
     }
     return {
         filesScanned,
         findings: results.length,
+        activeFindings,
+        suppressedFindings,
+        baselinedFindings,
         bySeverity,
     };
 }
@@ -48456,7 +48850,8 @@ function sortResults(results) {
         low: 3,
     };
     return [...results].sort((left, right) => {
-        const severity = severityWeight[left.severity] - severityWeight[right.severity];
+        const severity = severityWeight[left.effectiveSeverity ?? left.severity] -
+            severityWeight[right.effectiveSeverity ?? right.severity];
         if (severity !== 0) {
             return severity;
         }
@@ -48482,7 +48877,9 @@ async function run() {
     const format = (getInput("format") || "sarif");
     const output = getInput("output") || defaultOutput(format);
     const uploadSarif = getBooleanInput("upload-sarif", { required: false });
-    const result = await scan({ paths, failOn });
+    const configPath = getInput("config") || undefined;
+    const baselinePath = getInput("baseline") || undefined;
+    const result = await scan({ paths, failOn, configPath, baselinePath });
     const report = renderReport(format, result);
     const outputPath = external_node_path_namespaceObject.resolve(process.cwd(), output);
     await (0,promises_namespaceObject.mkdir)(external_node_path_namespaceObject.dirname(outputPath), { recursive: true });

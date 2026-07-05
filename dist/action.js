@@ -11,7 +11,9 @@ async function run() {
     const format = (core.getInput("format") || "sarif");
     const output = core.getInput("output") || defaultOutput(format);
     const uploadSarif = core.getBooleanInput("upload-sarif", { required: false });
-    const result = await scan({ paths, failOn });
+    const configPath = core.getInput("config") || undefined;
+    const baselinePath = core.getInput("baseline") || undefined;
+    const result = await scan({ paths, failOn, configPath, baselinePath });
     const report = renderReport(format, result);
     const outputPath = path.resolve(process.cwd(), output);
     await mkdir(path.dirname(outputPath), { recursive: true });

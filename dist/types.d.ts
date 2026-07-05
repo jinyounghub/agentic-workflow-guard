@@ -6,6 +6,7 @@ export interface RuleResult {
     id: string;
     title: string;
     severity: Severity;
+    effectiveSeverity?: Severity;
     confidence: Confidence;
     file: string;
     line: number;
@@ -15,6 +16,11 @@ export interface RuleResult {
     recommendation: string;
     references: string[];
     tags: string[];
+    fingerprint?: string;
+    suppressed?: boolean;
+    suppressionReason?: string;
+    suppressionSource?: "config" | "inline";
+    baselined?: boolean;
 }
 export interface Location {
     line: number;
@@ -79,10 +85,15 @@ export interface ScanOptions {
     paths?: string[];
     failOn?: FailThreshold;
     cwd?: string;
+    configPath?: string;
+    baselinePath?: string;
 }
 export interface ScanSummary {
     filesScanned: number;
     findings: number;
+    activeFindings: number;
+    suppressedFindings: number;
+    baselinedFindings: number;
     bySeverity: Record<Severity, number>;
 }
 export interface ScanResult {
@@ -94,6 +105,32 @@ export interface RuleContext {
     workflow: ParsedWorkflow;
 }
 export type Rule = (context: RuleContext) => RuleResult[];
+export interface GuardConfig {
+    rules?: Record<string, RuleConfig>;
+    exclude?: {
+        paths?: string[];
+    };
+    suppressions?: ConfigSuppression[];
+}
+export interface RuleConfig {
+    enabled?: boolean;
+    severity?: Severity;
+}
+export interface ConfigSuppression {
+    id: string;
+    file: string;
+    reason: string;
+    expires?: string;
+}
+export interface BaselineFile {
+    version: 1;
+    findings: BaselineFinding[];
+}
+export interface BaselineFinding {
+    id: string;
+    file: string;
+    fingerprint: string;
+}
 export declare const severityOrder: Record<Severity, number>;
 export declare function isAtLeastSeverity(severity: Severity, threshold: FailThreshold): boolean;
 export declare function emptySeverityCounts(): Record<Severity, number>;

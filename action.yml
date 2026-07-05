@@ -23,7 +23,10 @@ inputs:
     required: false
     default: "false"
   config:
-    description: Reserved for a future awi-guard.config.yml file.
+    description: Optional awi-guard.config.yml file for rule config, excludes, and suppressions.
+    required: false
+  baseline:
+    description: Optional awi-guard.baseline.json file for accepted existing findings.
     required: false
   github-token:
     description: Optional GitHub token for future integrations. The deterministic scanner does not require it.

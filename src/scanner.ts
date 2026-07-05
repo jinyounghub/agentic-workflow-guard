@@ -1,6 +1,12 @@
 import { access, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import fg from "fast-glob";
+import {
+  applyResultControls,
+  isExcludedByConfig,
+  loadBaselineFile,
+  loadGuardConfig,
+} from "./noise-control.js";
 import { rules } from "./rules/index.js";
 import type { FailThreshold, RuleResult, ScanOptions, ScanResult, Severity } from "./types.js";
 import { emptySeverityCounts, isAtLeastSeverity } from "./types.js";
@@ -10,7 +16,11 @@ const workflowGlob = ["**/*.yml", "**/*.yaml"];
 
 export async function scan(options: ScanOptions = {}): Promise<ScanResult> {
   const cwd = options.cwd ?? process.cwd();
-  const files = await collectWorkflowFiles(options.paths ?? [".github/workflows"], cwd);
+  const loadedConfig = await loadGuardConfig(options.configPath, cwd);
+  const baseline = await loadBaselineFile(options.baselinePath, cwd);
+  const files = (await collectWorkflowFiles(options.paths ?? [".github/workflows"], cwd)).filter(
+    (file) => !isExcludedByConfig(file, cwd, loadedConfig.config),
+  );
   const workflows = [];
   const results: RuleResult[] = [];
 
@@ -27,15 +37,30 @@ export async function scan(options: ScanOptions = {}): Promise<ScanResult> {
     }
   }
 
+  const controlledResults = sortResults(
+    applyResultControls({
+      results,
+      cwd,
+      config: loadedConfig.config,
+      diagnostics: loadedConfig.diagnostics,
+      baseline,
+    }),
+  );
+
   return {
     workflows,
-    results: sortResults(results),
-    summary: summarize(files.length, results),
+    results: controlledResults,
+    summary: summarize(files.length, controlledResults),
   };
 }
 
 export function shouldFail(results: RuleResult[], threshold: FailThreshold): boolean {
-  return results.some((finding) => isAtLeastSeverity(finding.severity, threshold));
+  return results.some(
+    (finding) =>
+      !finding.suppressed &&
+      !finding.baselined &&
+      isAtLeastSeverity(finding.effectiveSeverity ?? finding.severity, threshold),
+  );
 }
 
 async function collectWorkflowFiles(inputs: string[], cwd: string): Promise<string[]> {
@@ -104,12 +129,28 @@ function parseErrorResult(file: string, error: unknown): RuleResult {
 
 function summarize(filesScanned: number, results: RuleResult[]) {
   const bySeverity = emptySeverityCounts();
+  let activeFindings = 0;
+  let suppressedFindings = 0;
+  let baselinedFindings = 0;
+
   for (const result of results) {
-    bySeverity[result.severity] += 1;
+    if (result.suppressed) {
+      suppressedFindings += 1;
+      continue;
+    }
+    if (result.baselined) {
+      baselinedFindings += 1;
+      continue;
+    }
+    activeFindings += 1;
+    bySeverity[result.effectiveSeverity ?? result.severity] += 1;
   }
   return {
     filesScanned,
     findings: results.length,
+    activeFindings,
+    suppressedFindings,
+    baselinedFindings,
     bySeverity,
   };
 }
@@ -123,7 +164,9 @@ function sortResults(results: RuleResult[]): RuleResult[] {
   };
 
   return [...results].sort((left, right) => {
-    const severity = severityWeight[left.severity] - severityWeight[right.severity];
+    const severity =
+      severityWeight[left.effectiveSeverity ?? left.severity] -
+      severityWeight[right.effectiveSeverity ?? right.severity];
     if (severity !== 0) {
       return severity;
     }

@@ -1,0 +1,17 @@
+name: Missing Suppression Reason Fixture
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  agent:
+    runs-on: ubuntu-latest
+    steps:
+      - id: codex
+        uses: openai/codex-action@1111111111111111111111111111111111111111
+        with:
+          prompt: Summarize this pull request as data only.
+      - run: echo "${{ steps.codex.outputs.response }}"

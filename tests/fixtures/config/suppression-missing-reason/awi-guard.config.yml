@@ -1,0 +1,3 @@
+suppressions:
+  - id: R104
+    file: workflow.yml
