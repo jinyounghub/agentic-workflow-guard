@@ -2,6 +2,22 @@
 
 This page tracks real, dated public project health and adoption signals. Do not inflate, estimate, or backfill adoption numbers.
 
+## Snapshot: 2026-07-05 UTC after v0.2.0 release
+
+| Metric | Value | Evidence / notes |
+| --- | ---: | --- |
+| Latest GitHub release | `v0.2.0` | Published 2026-07-05 UTC |
+| npm version | `0.2.0` | `npm view @jin0/agentic-workflow-guard version` |
+| npm dist tag | `latest: 0.2.0` | `npm view @jin0/agentic-workflow-guard dist-tags` |
+| `v0` action tag | `v0.2.0` | `v0` and `v0.2.0` point to commit `1bc05b4` |
+| Open issues | `0` | No open public issues |
+| Closed issues | `7` | #1, #2, #3, #4, #5, #6, #7 |
+| Merged pull requests | `9` | #9, #10, #11, #12, #13, #14, #15, #16, #17 |
+| npm clean install smoke test | Pass | See [docs/npm-smoke-test.md](npm-smoke-test.md) |
+| External adopters | `0` | No known external adopters yet |
+| Owned repo adoption examples | `1` | `jinyounghub/approach-key-privacy` uses the GitHub Action in CI |
+| Owned repo dogfooding workflow | Pass | `jinyounghub/approach-key-privacy` [run 28742478947](https://github.com/jinyounghub/approach-key-privacy/actions/runs/28742478947) after `v0` tag move |
+
 ## Snapshot: 2026-07-05 UTC after contributor onboarding PR merge
 
 | Metric | Value | Evidence / notes |

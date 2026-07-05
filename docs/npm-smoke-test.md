@@ -2,6 +2,51 @@
 
 This document records installation checks for the published npm package. It is intentionally factual: it only records commands that were run and the observed result.
 
+## Snapshot: 2026-07-05 UTC after v0.2.0
+
+Environment:
+
+| Check | Result |
+| --- | --- |
+| Node.js | `v24.16.0` |
+| npm | `11.13.0` |
+| Package | `@jin0/agentic-workflow-guard` |
+| Version | `0.2.0` |
+| Dist tag | `latest: 0.2.0` |
+| Registry visibility | `public` |
+
+Registry metadata:
+
+```json
+{
+  "name": "@jin0/agentic-workflow-guard",
+  "version": "0.2.0",
+  "dist-tags": {
+    "latest": "0.2.0"
+  }
+}
+```
+
+Fresh install check:
+
+```bash
+npm init -y
+npm install --save-dev @jin0/agentic-workflow-guard@0.2.0
+npx agentic-workflow-guard --help
+npx awi-guard --help
+npx agentic-workflow-guard scan --help
+```
+
+Observed result:
+
+| Check | Result |
+| --- | --- |
+| Install from npm | Pass |
+| Installed dependency audit | `found 0 vulnerabilities` |
+| `npx agentic-workflow-guard --help` | Pass, exit code 0 |
+| `npx awi-guard --help` | Pass, exit code 0 |
+| `npx agentic-workflow-guard scan --help` | Pass, exit code 0 |
+
 ## Snapshot: 2026-07-04 UTC
 
 Environment:
