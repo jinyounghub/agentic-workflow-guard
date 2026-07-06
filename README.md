@@ -103,8 +103,13 @@ See [docs/adoption.md](docs/adoption.md) for rollout guidance. Ready-to-copy
 workflow examples are available in [examples](examples), including advisory,
 config/baseline, blocking, and SARIF upload modes.
 
-Public v0.2 announcement notes and feedback-request snippets are available in
-[docs/announcement.md](docs/announcement.md).
+## Launch and feedback
+
+v0.2.0 is ready for early maintainer feedback. See:
+
+- [docs/launch.md](docs/launch.md) for announcement snippets and sharing guidance.
+- [docs/interest-signals.md](docs/interest-signals.md) for public and aggregate signals to watch after sharing.
+- [docs/metrics.md](docs/metrics.md) for conservative dated project snapshots.
 
 ## Current maturity
 
