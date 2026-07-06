@@ -1,6 +1,6 @@
 # Project Metrics
 
-This page tracks real, dated public project health and adoption signals. Do not inflate, estimate, or backfill adoption numbers.
+This page tracks real, dated public project health and adoption signals. Do not inflate, estimate, or backfill adoption numbers. See [interest signals](interest-signals.md) for the aggregate signals that can be watched after sharing.
 
 ## Snapshot: 2026-07-05 UTC after launch-pack PR merge
 
