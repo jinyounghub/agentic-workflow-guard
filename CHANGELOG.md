@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+- Update project metrics after linking the public synthetic demo repository.
 - Link the public synthetic demo repository from the README.
 - Add public v0.2 launch plan and aggregate interest-signal tracking guide.
 - Add public v0.2 announcement notes and discovery metadata guidance.
