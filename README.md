@@ -111,6 +111,10 @@ v0.2.0 is ready for early maintainer feedback. See:
 - [docs/interest-signals.md](docs/interest-signals.md) for public and aggregate signals to watch after sharing.
 - [docs/metrics.md](docs/metrics.md) for conservative dated project snapshots.
 
+For a safe, synthetic walkthrough of expected findings, see the
+[agentic-workflow-guard-demo](https://github.com/jinyounghub/agentic-workflow-guard-demo)
+repository.
+
 ## Current maturity
 
 This is an early `v0.x` project. The `v0.2.0` release adds config files, baselines, narrow suppressions, better AI-output data-flow precision, verified AI action catalog metadata, and contributor onboarding fixtures. False positives are still expected while deeper workflow analysis continues to improve.

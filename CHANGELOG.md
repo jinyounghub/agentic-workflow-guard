@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+- Link the public synthetic demo repository from the README.
 - Add public v0.2 launch plan and aggregate interest-signal tracking guide.
 - Add public v0.2 announcement notes and discovery metadata guidance.
 - Update first-party GitHub Actions in CI and examples to current Node 24 runtime lines.
