@@ -2,6 +2,24 @@
 
 This page tracks real, dated public project health and adoption signals. Do not inflate, estimate, or backfill adoption numbers. See [interest signals](interest-signals.md) for the aggregate signals that can be watched after sharing.
 
+## Snapshot: 2026-07-07 UTC after demo link PR merge
+
+| Metric | Value | Evidence / notes |
+| --- | ---: | --- |
+| Latest GitHub release | `v0.2.0` | Published 2026-07-05 UTC |
+| npm version | `0.2.0` | `npm view @jin0/agentic-workflow-guard version` |
+| npm dist tag | `latest: 0.2.0` | `npm view @jin0/agentic-workflow-guard dist-tags` |
+| `v0` action tag | `v0.2.0` | `v0` and `v0.2.0` point to commit `1bc05b4` |
+| Main CI | Pass | Run `28877676802` after PR #31 merge |
+| Open issues | `0` | No open public issues |
+| Closed issues | `11` | #1, #2, #3, #4, #5, #6, #7, #19, #22, #25, #28 |
+| Merged pull requests | `19` | #9, #10, #11, #12, #13, #14, #15, #16, #17, #18, #20, #21, #23, #24, #26, #27, #29, #30, #31 |
+| Latest unreleased changes | public synthetic demo repository link and launch/interest-signal docs | Merged through #31 |
+| Public demo repository | `1` | `jinyounghub/agentic-workflow-guard-demo` provides safe synthetic examples and a passing demo workflow |
+| External adopters | `0` | No known external adopters yet |
+| Owned repo adoption examples | `1` | `jinyounghub/approach-key-privacy` uses the GitHub Action in CI |
+| Owned repo dogfooding workflow | Pass | `jinyounghub/approach-key-privacy` [run 28742478947](https://github.com/jinyounghub/approach-key-privacy/actions/runs/28742478947) after `v0` tag move |
+
 ## Snapshot: 2026-07-06 UTC after launch/signals PR merge
 
 | Metric | Value | Evidence / notes |
