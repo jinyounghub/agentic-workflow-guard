@@ -15,6 +15,7 @@ import { renderSarifReport } from "../src/sarif.js";
 import { scan, shouldFail } from "../src/scanner.js";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
+const root = path.resolve(dirname, "..");
 const fixtures = path.join(dirname, "fixtures");
 
 describe("agentic-workflow-guard scanner", () => {
@@ -234,6 +235,7 @@ describe("agentic-workflow-guard scanner", () => {
 
   it("applies the committed baseline fixture", async () => {
     const result = await scan({
+      cwd: root,
       paths: [path.join(fixtures, "baseline", "workflow.yml")],
       baselinePath: path.join(fixtures, "baseline", "awi-guard.baseline.json"),
     });

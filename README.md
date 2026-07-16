@@ -1,6 +1,7 @@
 # agentic-workflow-guard
 
 [![npm version](https://img.shields.io/npm/v/@jin0/agentic-workflow-guard.svg)](https://www.npmjs.com/package/@jin0/agentic-workflow-guard)
+[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Agentic%20Workflow%20Guard-2ea44f?logo=github)](https://github.com/marketplace/actions/agentic-workflow-guard)
 [![CI](https://github.com/jinyounghub/agentic-workflow-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/jinyounghub/agentic-workflow-guard/actions/workflows/ci.yml)
 [![GitHub release](https://img.shields.io/github/v/release/jinyounghub/agentic-workflow-guard)](https://github.com/jinyounghub/agentic-workflow-guard/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -14,6 +15,43 @@ Use it when you run Codex, Claude Code, Gemini CLI, GitHub Models, or similar AI
 `agentic-workflow-guard` is not an AI PR reviewer, an AGENTS.md linter, an MCP scanner, or a replacement for general GitHub Actions security scanners. It focuses on one boundary: untrusted GitHub event data reaching AI agent prompts, then flowing into write permissions, scripts, release commands, or secrets.
 
 Use zizmor for general GitHub Actions security. Use agentic-workflow-guard for AI-agent-specific workflow injection paths.
+
+## Try it in 30 seconds
+
+Add `.github/workflows/agentic-workflow-guard.yml` to a repository:
+
+```yaml
+name: Agentic Workflow Guard
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  awi-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Scan AI workflows
+        uses: jinyounghub/agentic-workflow-guard@v0
+        with:
+          paths: .github/workflows
+          fail-on: never
+```
+
+Every run writes a full Markdown report to the GitHub Job Summary, even when the
+saved report format is JSON or SARIF. Start with `fail-on: never`, review the
+findings, and raise the threshold only when the result is understood.
+
+[View the successful synthetic demo run](https://github.com/jinyounghub/agentic-workflow-guard-demo/actions/runs/28877490678)
+or [open the GitHub Marketplace listing](https://github.com/marketplace/actions/agentic-workflow-guard).
+
+[![Agentic Workflow Guard synthetic demo report](https://raw.githubusercontent.com/jinyounghub/agentic-workflow-guard/main/docs/assets/demo-report.png)](https://github.com/jinyounghub/agentic-workflow-guard-demo/blob/main/expected-report.md)
+
+_Actual report generated from the safe synthetic workflows in the public demo repository._
 
 ## Why this exists
 
@@ -71,33 +109,41 @@ Supported options:
 | `--no-color` | reserved | false |
 | `--verbose` | true or false | false |
 
-## GitHub Action usage
+## Save and reuse the report
 
-Start in non-blocking mode so maintainers can inspect findings without breaking CI.
+Give the scan step an `id` to upload its report or use the severity counts in
+later steps:
 
 ```yaml
-name: Agentic Workflow Guard
-
-on:
-  pull_request:
-  push:
-    branches: [main]
-
-permissions:
-  contents: read
-
-jobs:
-  awi-guard:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: jinyounghub/agentic-workflow-guard@v0
+      - name: Scan AI workflows
+        id: awi-guard
+        uses: jinyounghub/agentic-workflow-guard@v0
         with:
-          paths: .github/workflows
           fail-on: never
           format: markdown
           output: awi-guard-report.md
+
+      - name: Upload scanner report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: awi-guard-report
+          path: ${{ steps.awi-guard.outputs.report-path }}
 ```
+
+Available outputs:
+
+| Output | Description |
+| --- | --- |
+| `report-path` | Absolute path to the generated report |
+| `findings` | Total findings, including suppressed and baselined findings |
+| `critical` | Active critical findings |
+| `high` | Active high findings |
+| `medium` | Active medium findings |
+| `low` | Active low findings |
+
+For GitHub code scanning, use the ready-to-copy
+[SARIF upload example](examples/sarif-upload.yml).
 
 See [docs/adoption.md](docs/adoption.md) for rollout guidance. Ready-to-copy
 workflow examples are available in [examples](examples), including advisory,
@@ -105,7 +151,7 @@ config/baseline, blocking, and SARIF upload modes.
 
 ## Launch and feedback
 
-v0.2.0 is ready for early maintainer feedback. See:
+v0.2.1 is ready for early maintainer feedback. See:
 
 - [docs/launch.md](docs/launch.md) for announcement snippets and sharing guidance.
 - [docs/interest-signals.md](docs/interest-signals.md) for public and aggregate signals to watch after sharing.
@@ -117,7 +163,11 @@ repository.
 
 ## Current maturity
 
-This is an early `v0.x` project. The `v0.2.0` release adds config files, baselines, narrow suppressions, better AI-output data-flow precision, verified AI action catalog metadata, and contributor onboarding fixtures. False positives are still expected while deeper workflow analysis continues to improve.
+This is an early `v0.x` project. The `v0.2.1` release adds declared Action
+outputs and a clearer first-run path. The `v0.2.0` release added config files,
+baselines, narrow suppressions, better AI-output data-flow precision, verified
+AI action catalog metadata, and contributor onboarding fixtures. False positives
+are still expected while deeper workflow analysis continues to improve.
 
 Use it first as an advisory CI check with `fail-on: never`, then raise the fail threshold after reviewing findings.
 

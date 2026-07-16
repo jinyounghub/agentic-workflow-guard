@@ -31,6 +31,19 @@ inputs:
   github-token:
     description: Optional GitHub token for future integrations. The deterministic scanner does not require it.
     required: false
+outputs:
+  report-path:
+    description: Absolute path to the generated Markdown, JSON, or SARIF report.
+  findings:
+    description: Total number of findings, including suppressed and baselined findings.
+  critical:
+    description: Number of active critical-severity findings.
+  high:
+    description: Number of active high-severity findings.
+  medium:
+    description: Number of active medium-severity findings.
+  low:
+    description: Number of active low-severity findings.
 runs:
   using: node20
   main: dist/action/index.js

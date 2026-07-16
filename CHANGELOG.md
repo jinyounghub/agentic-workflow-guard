@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.2.1 - 2026-07-17
+
+- Declare the GitHub Action report path and severity-count outputs in `action.yml`.
+- Add a metadata test that keeps declared Action outputs aligned with the runtime.
+- Put the advisory quick start, real synthetic report preview, demo run, and Marketplace link near the top of the README.
+
 - Update project metrics after linking the public synthetic demo repository.
 - Link the public synthetic demo repository from the README.
 - Add public v0.2 launch plan and aggregate interest-signal tracking guide.
